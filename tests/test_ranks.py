@@ -54,8 +54,20 @@ def test_set_proposal(billboard, rank_token):
 
     rank_token.approve(billboard, billboard.proposalCost(), {"from": stewie})
     tx = billboard.propose(cid_1, {"from": stewie})
-    
+
     assert "SongProposed" in tx.events
     assert rank_token.balanceOf(stewie) == token_grant - billboard.proposalCost()
 
+    with brownie.reverts("already proposed"):
+        billboard.propose(cid_1, {"from": stewie})
+
+    rank_token.transfer(owner, rank_token.balanceOf(stewie), {"from":stewie})
+
+    with brownie.reverts("sorry bro, not enough tokens to propose"):
+        billboard.propose(cid_2, {"from": stewie})
+
+
+
+
+    
     
