@@ -67,7 +67,7 @@ import "../interfaces/IERC20.sol";
         uint withdrawnAmount;
     }
 
-    mapping(bytes32 => Song) public songs;
+    mapping(string => Song) public songs;
 
     // This mapping tracks which addresses we've seen before.  If an address has never been seen, and
     // its balance is 0, then it receives a token grant the first time it proposes or upvotes a song.
@@ -80,10 +80,11 @@ import "../interfaces/IERC20.sol";
                 EVENTS
     ****** ******* ****** ****** ****/
 
-    event SongProposed(address indexed proposer, bytes32 cid);
-    event SongUpvoted(address indexed upvoter, bytes32 cid);
-    event Withdrawal(address indexed withdrawer, bytes32 cid, uint tokens);
-
+    event SongProposed(address indexed proposer, string cid);
+    event SongUpvoted(address indexed upvoter, string cid);
+    event Withdrawal(address indexed withdrawer, string cid, uint tokens);
+    event UpdateProposalCost(address indexed proposer, uint amount);
+    event UpdateUpvoteCost(address indexed proposer, uint amount);
     constructor(address _address) {
         tokenAddress = _address;
         rankToken = IERC20(_address);
@@ -95,32 +96,41 @@ import "../interfaces/IERC20.sol";
     ****** ******* ****** ****** ****/
 
     function setProposalCost(uint256 _amount)  public onlyOwner {
-        proposalCost = _amount * DECIMALS;
+        proposalCost = _amount * (10 ** DECIMALS);
+        emit UpdateProposalCost(msg.sender, _amount);
 
     }
 
     function setUpvoteCost(uint256 _amount)  public onlyOwner {
-        upvoteCost = _amount * DECIMALS;
+        upvoteCost = _amount * (10 ** DECIMALS);
+        emit UpdateUpvoteCost(msg.sender, _amount);
 
     }
-
+    
     /**** ****** ******* ****** ****** 
-                UPVOTE LOGIC SER
+              PROPOSE &  UPVOTE LOGIC SER
     ****** ******* ****** ****** ****/
 
     modifier maybeTokenGrant {
         if (receivedTokenGrant[msg.sender] == false) {
             receivedTokenGrant[msg.sender] = true;
-            rankToken.transferFrom(tokenAddress, msg.sender, tokenGrantSize);
+            rankToken.transferFrom(owner(), msg.sender, tokenGrantSize);
         }
         _;
     }
 
-    function proposal(bytes32 cid) maybeTokenGrant public {
+    function tokenGrant() public {
+        if (receivedTokenGrant[msg.sender] == false) {
+            receivedTokenGrant[msg.sender] = true;
+            rankToken.transferFrom(owner(), msg.sender, tokenGrantSize);
+        }
+    }
+
+    function propose(string calldata cid) maybeTokenGrant public {
         require(songs[cid].numUpvoters == 0, "already proposed");
         require(rankToken.balanceOf(msg.sender) >= proposalCost, "sorry bro, not enough tokens to propose");
 
-
+        rankToken.transferFrom(msg.sender, address(this), proposalCost);
         
         Song storage song = songs[cid];
         song.submittedInBlock = block.number;

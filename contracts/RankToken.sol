@@ -1,5 +1,5 @@
 
-pragma solidity 0.8.6;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -115,7 +115,5 @@ contract RankToken is Context, AccessControlEnumerable, ERC20Burnable, ERC20Paus
         uint256 _value
     ) external view returns (bool _status) {}
 
-    /// @notice Minting
-    function setMinter(address _mintOperator, bool _status) external {}
-
+   
 }
