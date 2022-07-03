@@ -40,48 +40,62 @@
   </head>
   <body>
     <h1>Pick an episode...</h1>
-    <ul id="episodes">
-      <li>
-        <button data-spotify-id="spotify:episode:7makk4oTQel546B0PZlDM5">
-          My Path to Spotify: Women in Engineering
-        </button>
-      </li>
-      <li>
-        <button data-spotify-id="spotify:episode:43cbJh4ccRD7lzM2730YK3">
-          What is Backstage?
-        </button>
-      </li>
-      <li>
-        <button data-spotify-id="spotify:episode:6I3ZzCxRhRkNqnQNo8AZPV">
-          Introducing Nerd Out@Spotify
-        </button>
-      </li>
-    </ul>
+          <script src="https://apis.google.com/js/api.js"></script>
+      <script>
+        /**
+         * Sample JavaScript code for youtube.videos.list
+         * See instructions for running APIs Explorer code samples locally:
+         * https://developers.google.com/explorer-help/code-samples#javascript
+         */
 
-    <div id="embed-iframe"></div>
-    <script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async>
-    </script>
-    <script type="text/javascript">
-      window.onSpotifyIframeApiReady = (IFrameAPI) => {
-        let element = document.getElementById('embed-iframe');
-        let options = {
-            width: '60%',
-            height: '200',
-            uri: 'spotify:episode:7makk4oTQel546B0PZlDM5'
-          };
-        let callback = (EmbedController) => {
-          document.querySelectorAll('ul#episodes > li > button').forEach(
-            episode => {
-              episode.addEventListener('click', () => {
-                EmbedController.loadUri(episode.dataset.spotifyId)
-              });
-            })
-        };
-        IFrameAPI.createController(element, options, callback);
-      };
+        function authenticate() {
+          return gapi.auth2.getAuthInstance()
+              .signIn({scope: "https://www.googleapis.com/auth/youtube.readonly"})
+              .then(function() { console.log("Sign-in successful"); },
+                    function(err) { console.error("Error signing in", err); });
+        }
+        function loadClient() {
+          gapi.client.setApiKey("AIzaSyA5u-vl8QfEPHFlIsv-bpto2lZQooywNb4");
+          return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+              .then(function() { console.log("GAPI client loaded for API"); },
+                    function(err) { console.error("Error loading GAPI client for API", err); });
+        }
+        ["items"][0]["snippet"]
+        // Make sure the client is loaded and sign-in is complete before calling this method.
+        function execute() {
+          let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
+          let id = "https://www.youtube.com/watch?v=z_nr2cTN-9I&list=RDMM&index=2"
+          
+          return gapi.client.youtube.videos.list({
+            "part": [
+            "snippet, statistics"
+                  ],
+                  "id": [
+                    id.match(re)[7]
+                  ]
 
-      
-    </script>
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4je67eU5iJAhj3NJamBxWM?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+          })
+              .then(function(response) {
+                      // Handle the results here (response.result has the parsed body).
+                      let initial = response.result.items[0].snippet
+                      
+                      console.log("all", response.result.items[0].statistics);
+                      console.log("published", initial.publishedAt);
+                      // console.log("description", initial.description);
+                      console.log("img_src", initial.thumbnails.high.url);
+                      console.log("video_id", id.match(re)[7])
+                    },
+                    function(err) { console.error("Execute error", err); });
+        }
+        // gapi.load("client:auth2", function() {
+        //   gapi.auth2.init({client_id: "503493816389-vb7g8t6b046t27dqihv0lkr5c2tev41e.apps.googleusercontent.com"});
+        // });
+        gapi.load('client')
+      </script>
+      <button onclick="loadClient()"> load</button>
+      <button onclick="execute()">execute</button>
+
+      <h1>PIN THE FILES KWA PINNATA AND GET THE CID</h1>
   </body>
 </html>

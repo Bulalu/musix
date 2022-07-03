@@ -10,8 +10,8 @@ def rank_token():
         return RankToken[-1]
     else:
         print("Deploying new RankToken contract")
-        #publish_source=config["networks"][network.show_active()]["verify"]
-        contract = RankToken.deploy(account, INITIAL_SUPPLY, {"from": account})
+        
+        contract = RankToken.deploy(account, INITIAL_SUPPLY, {"from": account},publish_source=config["networks"][network.show_active()]["verify"])
         return contract
 
 def main():

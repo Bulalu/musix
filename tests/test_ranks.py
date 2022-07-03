@@ -11,10 +11,6 @@ def isolation(fn_isolation):
     pass
 
 
-# def billboard():
-#     account = accounts[0]
-#     token = rank_token()
-#     return Billboard.deploy(token, {"from": account})
 
 def test_set_proposal_cost(billboard):
     owner = accounts[0]
