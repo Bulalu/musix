@@ -183,7 +183,58 @@ const Home = () => {
     <>
       <div className="content">
         <TabList defaultActiveKey={1} tabStyle="bulbUnion">
-          <Tab tabKey={1} tabName="DAO">
+           
+          <Tab tabKey={1} tabName="MUSIC">
+          <div className="tabContent" >
+
+          <Form
+             buttonConfig={{
+              onClick: function noRefCheck(){},
+              theme: 'primary'
+            }}
+            data={[
+              
+              {
+                inputWidth: '100%',
+                name: 'youtube link',
+                type: 'text',
+                validation: {
+                  regExp: '^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$',
+                  required: true,
+                  regExpInvalidMessage: 'please put a valid YOUTUBE link ffs!'
+                },
+                value: ''
+              }
+            ]}
+
+            onSubmit={ async (e) => {
+              
+              let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
+              // console.log("id ",res.id)
+              // console.log("title ",res.title)
+              // console.log("image ",res.image)
+              // console.log("published", res.published)
+              console.log(res)
+             
+
+              // console.log("youtube link",e.data[0].inputResult)
+            }}
+            title="Drop a hit anon!"
+          
+          /> 
+            <div className="giphy">
+            <img width="250px"  src="https://media.giphy.com/media/blSTtZehjAZ8I/giphy.gif" alt="Ninja donut gif" /> 
+            </div>
+            
+ 
+          </div>
+          
+          
+            
+ 
+          </Tab>
+
+          <Tab tabKey={2} tabName="BOARD">
             {proposals && (
             <div className="tabContent">
               Governance Overview
@@ -249,77 +300,10 @@ const Home = () => {
             </div>
             )}
           </Tab>
-
-          
-          <Tab tabKey={2} tabName="MUSIC">
-          <div className="tabContent">
-          {/* <div className="input_filled">
-          <Input
-                    
-                    id=""
-                    label="youtube link"
-                    description="this song better be hot bro"
-                    name="Test text Input"
-                    onBlur={function noRefCheck(){}}
-                    onChange={function noRefCheck(){}}
-                    
-                    onSubmit={(e) => {
-                      console.log(e.data[0].inputResult)
-                    }}
-                    prefixIcon="youtube"
-                    type="text"
-                    validation={{
-                      regExp: "^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
-                      ,
-                      regExpInvalidMessage: 'That is not a valid youtube link'
-                    }}
-                  />
-          </div> */}
- 
-          </div>
-          
-          <Form
-             buttonConfig={{
-              onClick: function noRefCheck(){},
-              theme: 'primary'
-            }}
-            data={[
-              
-              {
-                inputWidth: '100%',
-                name: 'youtube link',
-                type: 'text',
-                validation: {
-                  regExp: '^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$',
-                  required: true,
-                  regExpInvalidMessage: 'please put a valid YOUTUBE link ffs!'
-                },
-                value: ''
-              }
-            ]}
-
-            onSubmit={ async (e) => {
-              // let me =   getData("https://www.youtube.com/watch?v=fsukuAcjyqU&list=RDfsukuAcjyqU&start_radio=1")
-              // console.log("youtube data",me)
-              let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
-              console.log("id ",res.id)
-              console.log("title ",res.title)
-              console.log("image ",res.image)
-              
-              // let x = await  getData(e.data[0].inputResult)
-              console.log(e.data[0].inputResult)
-            }}
-            title="Drop a hit"
-          
-          
-          /> 
-            
- 
-          </Tab>
           
         </TabList>
       </div>
-      <div className="voting"></div>
+      {/* <div className="voting"></div> */}
     </>
   );
 };

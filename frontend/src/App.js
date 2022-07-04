@@ -12,7 +12,8 @@ const App = () => {
   return (
     <>
       <div className="header">
-        <img width="100px"  src="https://media.giphy.com/media/MagSgolK3ScWvtHAB4/giphy.gif" alt="Ninja donut gif" /> 
+        {/* <img width="200px"  src="https://media.giphy.com/media/blSTtZehjAZ8I/giphy."  />  */}
+        <h2>Rankasong</h2>
         
         <ConnectButton />
       </div>
