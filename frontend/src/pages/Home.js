@@ -3,11 +3,8 @@ import "./pages.css";
 import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input} from "web3uikit";
 import { Link } from "react-router-dom";
 import { useMoralis, useMoralisWeb3Api, useWeb3ExecuteFunction } from "react-moralis";
-// import { getData } from "../utils/api.mjs";
-// import fetch from "node-fetch";
-
+import axios from "axios";
 import {} from 'dotenv/config'
-
 
 
 
@@ -21,51 +18,11 @@ const Home = () => {
   const Web3Api = useMoralisWeb3Api();
   const [sub, setSub] = useState();
   const contractProcessor = useWeb3ExecuteFunction();
+  const [post, setPost] = useState(null);
 
   
-  ///////////////////////FUKIN YOUTUBE API STUFF///////////////////////////////////
-  // function slipt_string(input) {
-  //   return input.split("T")[0]
-  // }
-
-
-  // async function getData(yt_link) {
-  //   let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
-  //   const url =  URL("https://www.googleapis.com/youtube/v3/videos");
-  //   url.search =  URLSearchParams({
-  //     key: process.env.YOUTUBE_API_KEY,
-  //     part: "snippet",
-  //     id: yt_link.match(re)[7],
-  //   }).toString();
-  
-  //   return fetch(url)
-  //     .then(async (response) => {
-  //       const data = await response.json();
-        
-  //       const videos = data?.items || [];
-  //       return videos.map((video) => {
-  //         return {
-  //           id: video?.id,
-  //           title: video?.snippet?.title,
-  //           published: slipt_string(video?.snippet?.publishedAt),
-  //           thumbnails: video?.snippet?.thumbnails?.high?.url,
-           
-  //         };
-  //       });
-  //     })
-  //     .catch((error) => {
-  //       console.warn(error);
-  //     });
-  
-  // }
-
-  // console.log("testinf my functino,",  getData("https://www.youtube.com/watch?v=fsukuAcjyqU&list=RDfsukuAcjyqU&start_radio=1"))
-
   
 
-
-  /////////////////////I HATE JS SO MUCH //////////////////////////////////
-  
  
 
   async function createProposal(newProposal) {
@@ -114,13 +71,11 @@ const Home = () => {
 
 
   }
-  
 
   
 
 
- 
-    
+
   async function getStatus(proposalId) {
     const ProposalCounts = Moralis.Object.extend("ProposalCounts");
     const query = new Moralis.Query(ProposalCounts);
@@ -136,10 +91,11 @@ const Home = () => {
       return { color: "blue", text: "Ongoing" };
     }
   }
-  
+
+ 
   useEffect(() => {
     if (isInitialized) {
-
+        
       async function getProposals() {
         const Proposals = Moralis.Object.extend("Proposals");
         const query = new Moralis.Query(Proposals);
@@ -208,7 +164,21 @@ const Home = () => {
     }
   }, [isInitialized]);
   
-  
+  async function fetchYoutubeData(yt_link) {
+    let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
+    
+    let url = "https://www.googleapis.com/youtube/v3/videos?key=" + process.env.REACT_APP_YOUTUBE_API_KEY +"&part=snippet&id=" + yt_link.match(re)[7]
+    const response = await axios.get(url)
+    const data_ = await response.data
+    return {
+            "id": data_.items[0]?.id,
+            "title": data_.items[0]?.snippet?.title,
+            "published":data_.items[0]?.snippet?.publishedAt,
+            "image":data_.items[0]?.snippet?.thumbnails?.high?.url
+    }
+    
+}
+ 
   return (
     <>
       <div className="content">
@@ -328,10 +298,15 @@ const Home = () => {
               }
             ]}
 
-            onSubmit={(e) => {
+            onSubmit={ async (e) => {
               // let me =   getData("https://www.youtube.com/watch?v=fsukuAcjyqU&list=RDfsukuAcjyqU&start_radio=1")
               // console.log("youtube data",me)
+              let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
+              console.log("id ",res.id)
+              console.log("title ",res.title)
+              console.log("image ",res.image)
               
+              // let x = await  getData(e.data[0].inputResult)
               console.log(e.data[0].inputResult)
             }}
             title="Drop a hit"
@@ -339,42 +314,7 @@ const Home = () => {
           
           /> 
             
-            
-          
-             {/* <div className="tabContent">
-              Propose Some music bro
-              <div className="widgets">
-                <Widget
-                  info="yellow"
-                  title="create something"
-                  
-                >
-
-                  <Input
-                    
-                    id=""
-                    label="youtube link"
-                    description="this song better be hot bro"
-                    name="Test text Input"
-                    onBlur={function noRefCheck(){}}
-                    onChange={function noRefCheck(){}}
-                    prefixIcon="youtube"
-                    type="text"
-                    validation={{
-                      regExp: '^(?:https?:)?(?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]{7,15})(?:[\?&][a-zA-Z0-9\_-]+=[a-zA-Z0-9\_-]+)*(?:[&\/\#].*)?$',
-                      regExpInvalidMessage: 'That is not a valid youtube link'
-                    }}
-                  />
-                                    
-                </Widget>
-                
-                
-              </div>
-              </div> */}
-
-
-            
-            
+ 
           </Tab>
           
         </TabList>
