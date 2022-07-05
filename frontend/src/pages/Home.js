@@ -18,12 +18,53 @@ const Home = () => {
   const Web3Api = useMoralisWeb3Api();
   const [sub, setSub] = useState();
   const contractProcessor = useWeb3ExecuteFunction();
-  const [post, setPost] = useState(null);
-
   
-  
-
+  const [file, setFile] = useState()
+  const [myipfsHash, setIPFSHASH] = useState('')
  
+  
+  
+  const handleFile=async (fileToHandle) =>{
+
+    
+
+    console.log('starting')
+
+    // initialize the form data
+    const json_data = JSON.stringify(fileToHandle)
+
+    // append the file form data to 
+   
+
+    // call the keys from .env
+
+    const API_KEY = process.env.REACT_APP_API_KEY
+    const API_SECRET = process.env.REACT_APP_API_SECRET
+
+    // the endpoint needed to upload the file
+    const url =  `https://api.pinata.cloud/pinning/pinJSONToIPFS`
+
+    const response = await axios.post(
+      url,
+      json_data,
+      {
+          headers: {
+              "Content-Type": 'application/json', 
+              'pinata_api_key': API_KEY,
+              'pinata_secret_api_key': API_SECRET
+
+          }
+      }
+  )
+
+  console.log(response)
+
+  // get the hash
+  setIPFSHASH(response.data.IpfsHash)
+
+  
+  }
+
 
   async function createProposal(newProposal) {
     let options = {
@@ -73,8 +114,6 @@ const Home = () => {
   }
 
   
-
-
 
   async function getStatus(proposalId) {
     const ProposalCounts = Moralis.Object.extend("ProposalCounts");
@@ -210,6 +249,7 @@ const Home = () => {
             onSubmit={ async (e) => {
               
               let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
+              handleFile(res)
               // console.log("id ",res.id)
               // console.log("title ",res.title)
               // console.log("image ",res.image)

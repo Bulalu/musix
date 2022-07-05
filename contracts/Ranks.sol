@@ -120,6 +120,8 @@ import "../interfaces/IERC20.sol";
     }
 
     function tokenGrant() public {
+        // create a bool function where you can choose to stop the grant 
+        // inorder to avoid people claiming with new addresses
         if (receivedTokenGrant[msg.sender] == false) {
             receivedTokenGrant[msg.sender] = true;
             rankToken.transferFrom(owner(), msg.sender, tokenGrantSize);
