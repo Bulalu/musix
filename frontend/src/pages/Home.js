@@ -20,24 +20,19 @@ const Home = () => {
   const contractProcessor = useWeb3ExecuteFunction();
   
   const [file, setFile] = useState()
-  const [myipfsHash, setIPFSHASH] = useState('')
+  const [myipfsHash, setIPFSHASH] = useState()
  
   
   
-  const handleFile=async (fileToHandle) =>{
-
-    
+  const HandleFile=async (inputData) =>{
 
     console.log('starting')
+    const [myipfsHash, setIPFSHASH] = useState()
 
     // initialize the form data
-    const json_data = JSON.stringify(fileToHandle)
-
-    // append the file form data to 
-   
+    const json_data = JSON.stringify(inputData)
 
     // call the keys from .env
-
     const API_KEY = process.env.REACT_APP_API_KEY
     const API_SECRET = process.env.REACT_APP_API_SECRET
 
@@ -57,12 +52,19 @@ const Home = () => {
       }
   )
 
-  console.log(response)
+    console.log("logging resposne", response)
+    console.log("I am the hash", response.data.IpfsHash)
 
-  // get the hash
-  setIPFSHASH(response.data.IpfsHash)
+    // get the hash
+     setIPFSHASH(response?.data.IpfsHash)
 
-  
+    if (! myipfsHash) return (
+      console.log("I did not find the hash")
+    )
+
+    return response.data.IpfsHash
+
+    
   }
 
 
@@ -213,7 +215,8 @@ const Home = () => {
             "id": data_.items[0]?.id,
             "title": data_.items[0]?.snippet?.title,
             "published":data_.items[0]?.snippet?.publishedAt,
-            "image":data_.items[0]?.snippet?.thumbnails?.high?.url
+            "image":data_.items[0]?.snippet?.thumbnails?.high?.url,
+            "yt_link": yt_link
     }
     
 }
@@ -249,15 +252,17 @@ const Home = () => {
             onSubmit={ async (e) => {
               
               let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
-              handleFile(res)
+              HandleFile(res)
+              console.log(myipfsHash)
               // console.log("id ",res.id)
               // console.log("title ",res.title)
               // console.log("image ",res.image)
               // console.log("published", res.published)
               console.log(res)
+              console.log(myipfsHash)
              
 
-              // console.log("youtube link",e.data[0].inputResult)
+              console.log(`https://gateway.pinata.cloud/ipfs/${myipfsHash}`)
             }}
             title="Drop a hit anon!"
           
