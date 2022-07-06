@@ -9,10 +9,14 @@ import {} from 'dotenv/config'
 
 
 const Home = () => {
-  
+  const [passRate, setPassRate] = useState(0);
+  const [totalP, setTotalP] = useState(0);
+  const [counted, setCounted] = useState(0);
+  const [voters, setVoters] = useState(0);
   const { Moralis, isInitialized } = useMoralis();
- 
+  const [proposals, setProposals] = useState();
   const Web3Api = useMoralisWeb3Api();
+  const [sub, setSub] = useState();
   const contractProcessor = useWeb3ExecuteFunction();
   
   const [file, setFile] = useState()
@@ -26,7 +30,6 @@ const Home = () => {
 
     // initialize the form data
     const json_data = JSON.stringify(inputData)
-    console.log("json stringfied", json_data)
 
     // call the keys from .env
     const API_KEY = process.env.REACT_APP_API_KEY
@@ -49,17 +52,157 @@ const Home = () => {
   )
 
     console.log("logging resposne", response)
-    // console.log("I am the hash", response.data.IpfsHash)
+    console.log("I am the hash", response.data.IpfsHash)
 
     // get the hash
-     setIPFSHASH(response.data.IpfsHash)
+     setIPFSHASH(response?.data.IpfsHash)
 
-    
+    if (! myipfsHash) return (
+      console.log("I did not find the hash")
+    )
+
     
     
   }
 
 
+  async function createProposal(newProposal) {
+    let options = {
+      contractAddress: "0x8316B2Bd5876AC2816a1Aa851e18cF8D1de47C24",
+      functionName: "createProposal",
+      abi: [
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_description",
+              "type": "string"
+            },
+            {
+              "internalType": "address[]",
+              "name": "_canVote",
+              "type": "address[]"
+            }
+          ],
+          "name": "createProposal",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+      ],
+      params: {
+        _description: newProposal,
+        _canVote: voters,
+      },
+    };
+
+
+    await contractProcessor.fetch({
+      params: options,
+      onSuccess: () => {
+        console.log("Proposal Succesful");
+        setSub(false);
+      },
+      onError: (status) => {
+        console.log(status.error.message);
+        alert(status.error.message);
+        setSub(false);
+      },
+    });
+
+
+  }
+
+  
+
+  async function getStatus(proposalId) {
+    const ProposalCounts = Moralis.Object.extend("ProposalCounts");
+    const query = new Moralis.Query(ProposalCounts);
+    query.equalTo("uid", proposalId);
+    const result = await query.first();
+    if (result !== undefined) {
+      if (result.attributes.passed) {
+        return { color: "green", text: "Passed" };
+      } else {
+        return { color: "red", text: "Rejected" };
+      }
+    } else {
+      return { color: "blue", text: "Ongoing" };
+    }
+  }
+
+ 
+  useEffect(() => {
+    if (isInitialized) {
+        
+      async function getProposals() {
+        const Proposals = Moralis.Object.extend("Proposals");
+        const query = new Moralis.Query(Proposals);
+        query.descending("uid_decimal");
+        const results = await query.find();
+        const table = await Promise.all(
+          results.map(async (e) => [
+            e.attributes.uid,
+            e.attributes.description,
+            <Link to="/proposal" state={{
+              description: e.attributes.description,
+              color: (await getStatus(e.attributes.uid)).color,
+              text: (await getStatus(e.attributes.uid)).text,
+              id: e.attributes.uid,
+              proposer: e.attributes.proposer
+              
+              }}>
+              <Tag
+                color={(await getStatus(e.attributes.uid)).color}
+                text={(await getStatus(e.attributes.uid)).text}
+              />
+            </Link>,
+          ])
+        );
+        setProposals(table);
+        setTotalP(results.length);
+        
+      }
+
+
+      async function getPassRate() {
+        const ProposalCounts = Moralis.Object.extend("ProposalCounts");
+        const query = new Moralis.Query(ProposalCounts);
+        const results = await query.find();
+        let votesUp = 0;
+
+        results.forEach((e) => {
+          if (e.attributes.passed) {
+            votesUp++;
+          }
+        });
+
+        setCounted(results.length);
+        setPassRate((votesUp / results.length) * 100);
+      }
+
+
+      const fetchNFTOwners = async () => {
+        const options = {
+          address: "0x705f8B395361218056B20eE5C36853AB84b8bbFF",
+          chain: "rinkeby",
+        };
+        const NFTOwners = await Web3Api.token.getNFTOwners(options);
+        const addresses = NFTOwners.result.map((e) => e.owner_of);
+        // removes duplicates from array list
+        // create a PR on this
+        const uniqueAddresses = [...new Set(addresses)]
+        setVoters(uniqueAddresses);
+      };
+
+
+      fetchNFTOwners();
+      getProposals();
+      getPassRate();
+      
+    }
+  }, [isInitialized]);
+  
   async function fetchYoutubeData(yt_link) {
     let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
     
@@ -108,10 +251,14 @@ const Home = () => {
               
               let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
               handleFile(res)
+              // setIPFSHASH("fsfs")
              
-             
+              // console.log("id ",res.id)
+              // console.log("title ",res.title)
+              // console.log("image ",res.image)
+              // console.log("published", res.published)
               console.log(res)
-              console.log("IPFS VAriable",myipfsHash)
+              console.log(myipfsHash)
              
 
               console.log(`https://gateway.pinata.cloud/ipfs/${myipfsHash}`)
@@ -121,8 +268,6 @@ const Home = () => {
           /> 
             <div className="giphy">
             <img width="250px"  src="https://media.giphy.com/media/blSTtZehjAZ8I/giphy.gif" alt="Ninja donut gif" /> 
-            <h1> here is your cid {myipfsHash}</h1>
-            <a href={`https://gateway.pinata.cloud/ipfs/${myipfsHash}`}> your cid</a>
             </div>
             
  
@@ -134,7 +279,7 @@ const Home = () => {
           </Tab>
 
           <Tab tabKey={2} tabName="BOARD">
-            {/* {proposals && (
+            {proposals && (
             <div className="tabContent">
               Governance Overview
               <div className="widgets">
@@ -197,7 +342,7 @@ const Home = () => {
 
 
             </div>
-            )} */}
+            )}
           </Tab>
           
         </TabList>
