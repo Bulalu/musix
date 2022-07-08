@@ -15,7 +15,8 @@ const Home = () => {
   const Web3Api = useMoralisWeb3Api();
   const contractProcessor = useWeb3ExecuteFunction();
   const [sub, setSub] = useState();
-  const [youtubeData, setYoutubeData] = useState()
+  const [hashes, setSongHashes] = useState()
+  const [totalSongs, setTotalSongs] = useState(0);
   const [myipfsHash, setIPFSHASH] = useState()
   
   async function allInOne(yt_link) {
@@ -104,6 +105,45 @@ const Home = () => {
 
   }
 
+  useEffect(() => {
+
+    if (isInitialized) {
+
+      async function getSongs() {
+
+        const Songs = Moralis.Object.extend("Songs");
+        const query = new Moralis.Query(Songs);
+        query.descending("createdAt");
+        const results = await query.find();
+        const table = await Promise.all(
+          results.map(async (song) => [
+            song.attributes.uid,
+            song.attributes.cid,
+            <Link to="/proposal" state={{
+              description: song.attributes.cid,
+              color: "white",
+              text: "hello",
+              id: song.attributes.uid,
+              proposer: song.attributes.proposer
+              
+              }}>
+                <Tag
+                  color="white"
+                  text="View"
+              />
+
+              </Link>
+          ]
+        )
+        );
+
+        setSongHashes(table)   
+  }
+
+  getSongs()
+}
+  }, [isInitialized]);
+
 
 
 
@@ -139,15 +179,8 @@ const Home = () => {
 
             onSubmit={ async (e) => {
               setSub(true);
-              const yt_link = e.data[0].inputResult
-              // console.log("yt_link", yt_link)
-              await allInOne(e.data[0].inputResult)
-              // let res =  await  fetchYoutubeData(e.data[0].inputResult).then( data => {return data})
-              // await handleFile(res).then(proposeSong("Sdsdsd"))
              
-              // // await proposeSong(myipfsHash)
-              // // console.log(res)
-              // // console.log("IPFS VAriable",myipfsHash)
+              await allInOne(e.data[0].inputResult)
              
 
               // console.log(`https://gateway.pinata.cloud/ipfs/${myipfsHash}`)
@@ -157,36 +190,22 @@ const Home = () => {
           /> 
             <div className="giphy">
             <img width="250px"  src="https://media.giphy.com/media/blSTtZehjAZ8I/giphy.gif" alt="Ninja donut gif" /> 
-            {/* <h1> here is your cid {myipfsHash}</h1>
-
-
-            <a href={`https://gateway.pinata.cloud/ipfs/${myipfsHash}`}> your cid</a> */}
-            {/* {
-              myipfsHash && (
-              //   <Hero
-              //   align="left"
-              //   height="176px"
-              //   linearGradient="linear-gradient(113.54deg, rgba(60, 87, 140, 0.5) 14.91%, rgba(70, 86, 169, 0.5) 43.21%, rgba(125, 150, 217, 0.345) 44.27%, rgba(129, 161, 225, 0.185) 55.76%), linear-gradient(151.07deg, #141659 33.25%, #4152A7 98.24%)"
-              //   rounded="20px"
-              //   textColor="#fff"
-              //   title= "CID"
-              // >
-              //   {`https://gateway.pinata.cloud/ipfs/${myipfsHash}`}
-              // </Hero>
-              // <Alert severity="success" color="info">
-              // Awesome, https://gateway.pinata.cloud/ipfs/{myipfsHash}
-              // </Alert>
-               
-
-
-              // alert("awesome you can view the CID to your song here https://gateway.pinata.cloud/ipfs/" + myipfsHash + " and some little info here" + youtubeData.title) 
-              
-              )
-              
-            }
-             */}
-            </div>
             
+            </div>
+
+            Recent Proposals
+              <div style={{ marginTop: "30px" }}>
+                <Table
+                  columnsConfig="10% 70% 20%"
+                  data={hashes}
+                  header={[
+                    <span>ID</span>,
+                    <span>Description</span>,
+                    <span>CID</span>,
+                  ]}
+                  pageSize={5}
+                />
+              </div>
  
           </div>
           {
