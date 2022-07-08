@@ -92,7 +92,7 @@ const Home = () => {
       <Alert severity="success" color="info">
             Awesome, https://gateway.pinata.cloud/ipfs/{myipfsHash}
       </Alert>
-      console.log("Awesome, https://gateway.pinata.cloud/ipfs/" + ipfs_hash)
+      console.log("Awesome, https://gateway.pinata.cloud/ipfs/" + myipfsHash)
       setSub(false);
     },
     onError: (status) => {
@@ -104,9 +104,114 @@ const Home = () => {
 
   }
 
+  async function proposeSong(CID) {
+    let options = {
+      contractAddress: "0xf72802C65532818041ad8d904F73be68741b4B26",
+      functionName: "propose",
+      abi: [
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "cid",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "_proposer",
+              "type": "address"
+            }
+          ],
+          "name": "propose",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      params: {
+        cid: CID,
+        _proposer: "0xa3dD11E7D3Aa89b9e0598ac0d678910417d63989"
+
+      }
+    }
+
+    await contractProcessor.fetch({
+      params: options,
+      onSuccess: () => {
+        <Alert severity="success" color="info">
+              Awesome, https://gateway.pinata.cloud/ipfs/{myipfsHash}
+        </Alert>
+        setSub(false);
+      },
+      onError: (status) => {
+        console.log(status.error.message);
+        alert(status.error.message);
+        setSub(false);
+      },
+    });
+  }
+ 
+  
+  const handleFile=async (inputData) =>{
+
+    console.log('starting')
+
+    // initialize the form data
+    const json_data = JSON.stringify(inputData)
+    console.log("json stringfied", json_data)
+
+    // call the keys from .env
+    const API_KEY = process.env.REACT_APP_API_KEY
+    const API_SECRET = process.env.REACT_APP_API_SECRET
+
+    // the endpoint needed to upload the file
+    const url =  `https://api.pinata.cloud/pinning/pinJSONToIPFS`
+
+    const response = await axios.post(
+      url,
+      json_data,
+      {
+          headers: {
+              "Content-Type": 'application/json', 
+              'pinata_api_key': API_KEY,
+              'pinata_secret_api_key': API_SECRET
+
+          }
+      }
+  )
+
+      // get the hash
+     setIPFSHASH(response.data.IpfsHash)
+
+    console.log("logging resposne", response)
+    // console.log("I am the hash", response.data.IpfsHash)
+
+    
+
+    
+    
+    
+  }
 
 
-
+  async function fetchYoutubeData(yt_link) {
+    let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
+    
+    let url = "https://www.googleapis.com/youtube/v3/videos?key=" + process.env.REACT_APP_YOUTUBE_API_KEY +"&part=snippet&id=" + yt_link.match(re)[7]
+    const response = await axios.get(url)
+    const data_ = await response.data
+    const clean_data = await  {
+      "id": data_.items[0]?.id,
+      "title": data_.items[0]?.snippet?.title,
+      "published":data_.items[0]?.snippet?.publishedAt,
+      "image":data_.items[0]?.snippet?.thumbnails?.high?.url,
+      "yt_link": yt_link
+}
+    setYoutubeData(clean_data)
+    console.log(clean_data)
+    return  clean_data
+    
+}
  
   return (
     <>

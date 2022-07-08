@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Proposal from "./pages/Proposal";
 import Fetchy from "./pages/FetchData";
-// import Pinatta from "./pages/Pinatta";
+import Testu from "./pages/Testu";
 import moralisLogo from "./images/Moralis.png";
 import myLogo from "./images/me.png";
 import { ConnectButton } from "web3uikit";
@@ -22,7 +22,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/proposal" element={<Proposal />} />
         <Route path="/fetchy" element={<Fetchy />} />
-        {/* <Route path="/pinatta" element={<Pinatta />} /> */}
+        <Route path="/testu" element={<Testu />} />
       </Routes>
     </>
   );

@@ -44,7 +44,7 @@ def propose_song():
     CID = 'QmZSvz8s9pMEAMhzy1tzunU2xBP2g25de48y6buM8ssYZW'
     # take note of the token grant
     # this only works because owner is the admin
-    billboard_contract.propose(CID, {"from": owner})
+    billboard_contract.propose(CID, owner, {"from": owner})
     
 def getter():
     account = get_account(1)

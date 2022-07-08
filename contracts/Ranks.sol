@@ -3,30 +3,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IERC20.sol";
 
-/**
-    ROADMAP BILLBOARD REWARDER
-    A platform where users are incentived to find lit content before they get mass adoption.
-    WHY?. i think its pretty cool when you have a chance to earn for finding a cool song from early on
-    - A cool way to discover music,
-    - Get rewarded for you sweet music taste
-    - Promotes underground artist work
 
-    FUNCTIONS
-    - propose A song that you think will be a banger
-    - vote on the proposed song
-    - withdraw your rewards
-
-    IDEA
-    - maybe a user can only propose for the song they own as NFT
-    - there should be a propose fee and vote fee
-    - users should have the RANK TOKEN to vote and propose
-
-    QUESTION
-    - is there a limit to how many times a user can propose a song
-    - how to do the math for calculation
-
-
- */
 
 
  contract Billboard is Ownable {
@@ -57,6 +34,8 @@ import "../interfaces/IERC20.sol";
         uint256 allTimeUpvotes;
         // Tracks the number of upvoters (!= allTimeUpvotes when upvoteCost != 1)
         uint256 numUpvoters;
+        // the proposer
+        address proposer;
         // Maps a user's address to their place in the "queue" of users who have upvoted this song.  Used to calculate withdrawable amounts.
         mapping(address => Upvote) upvotes;
     }
@@ -128,7 +107,7 @@ import "../interfaces/IERC20.sol";
         }
     }
 
-    function propose(string calldata cid) maybeTokenGrant public {
+    function propose(string calldata cid, address _proposer) maybeTokenGrant public {
         require(songs[cid].numUpvoters == 0, "already proposed");
         require(rankToken.balanceOf(msg.sender) >= proposalCost, "sorry bro, not enough tokens to propose");
 
@@ -141,6 +120,7 @@ import "../interfaces/IERC20.sol";
         song.allTimeUpvotes += proposalCost;
         song.numUpvoters++;
         song.upvotes[msg.sender].index = song.numUpvoters;
+        song.proposer = _proposer;
 
         emit SongProposed(msg.sender, cid);
 
