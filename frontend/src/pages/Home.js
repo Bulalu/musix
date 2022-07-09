@@ -3,6 +3,7 @@ import "./pages.css";
 import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero} from "web3uikit";
 import { Link } from "react-router-dom";
 import { useMoralis, useMoralisWeb3Api, useWeb3ExecuteFunction} from "react-moralis";
+import { MDBCard, MDBCardBody, MDBCardTitle, MDBCardText, MDBCardImage, MDBBtn } from 'mdb-react-ui-kit';
 import axios from "axios";
 import {} from 'dotenv/config'
 import { Alert } from '@mui/material';
@@ -105,11 +106,27 @@ const Home = () => {
 
   }
 
+  async function getSongs(ipfs_hash){
+
+    try {
+      const URL =  `https://gateway.pinata.cloud/ipfs/${ipfs_hash}`
+      const response = await axios.get(URL)
+      const data = await response.data
+      return data
+
+    } catch (error) {
+      console.log(error.response)
+      return error.response
+    }
+
+  }
+  //  getSongs("QmUgzjSTqnQDEHh1Rn7oPrdEMphLz7s347oBbxZeYAQhnq")
+
   useEffect(() => {
 
     if (isInitialized) {
 
-      async function getSongs() {
+      async function getCIDS() {
 
         const Songs = Moralis.Object.extend("Songs");
         const query = new Moralis.Query(Songs);
@@ -123,13 +140,13 @@ const Home = () => {
               description: song.attributes.cid,
               color: "white",
               text: "hello",
-              id: song.attributes.uid,
+              id: song.attributes.cid,
               proposer: song.attributes.proposer
               
               }}>
                 <Tag
                   color="white"
-                  text="View"
+                  text={(await getSongs(song.attributes.cid)).title}
               />
 
               </Link>
@@ -137,10 +154,11 @@ const Home = () => {
         )
         );
 
-        setSongHashes(table)   
+        setSongHashes(table)
+        setTotalSongs(results.length)   
   }
 
-  getSongs()
+  getCIDS()
 }
   }, [isInitialized]);
 
@@ -205,6 +223,10 @@ const Home = () => {
                   ]}
                   pageSize={5}
                 />
+                {/* {hashes.map((hash, index) => (console.log(hash))} */}
+                {
+                 
+                }
               </div>
  
           </div>
