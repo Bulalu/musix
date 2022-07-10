@@ -156,6 +156,7 @@ const Home = () => {
                 color={(await getStatus(e.attributes.uid)).color}
                 text={(await getStatus(e.attributes.uid)).text}
               />
+              
             </Link>,
           ])
         );

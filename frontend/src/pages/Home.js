@@ -19,10 +19,16 @@ const Home = () => {
   const [hashes, setSongHashes] = useState()
   const [totalSongs, setTotalSongs] = useState(0);
   const [myipfsHash, setIPFSHASH] = useState()
-  
+  const [rankBalance, setRankTokenBalance] = useState()
+  const DECIMALS = 1000000
+  const { authenticate, isAuthenticated, isAuthenticating, user, account, logout } = useMoralis();
+   
+
   async function allInOne(yt_link) {
 
-    // fetch data from youtube
+    if (isAuthenticated) {
+
+       // fetch data from youtube
     let re = /(https?:\/\/)?((www\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
     
     let url = "https://www.googleapis.com/youtube/v3/videos?key=" + process.env.REACT_APP_YOUTUBE_API_KEY +"&part=snippet&id=" + yt_link.match(re)[7]
@@ -83,7 +89,7 @@ const Home = () => {
     ],
     params: {
       cid: ipfs_hash,
-      _proposer: "0xa3dD11E7D3Aa89b9e0598ac0d678910417d63989"
+      _proposer: account
 
     }
   }
@@ -104,7 +110,62 @@ const Home = () => {
     },
   });
 
+  } else {
+    alert("Not Authenticated")
   }
+
+    } 
+
+  async function canProposeCID(account) {
+    
+      let options = {
+        contractAddress: "0xA830FDEe034dD2aED4AC148e8F89f966303d980E",
+        functionName: "balanceOf",
+        abi: [
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+              }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          }
+        ],
+        params: {
+          account: account,
+          
+        }
+      }
+
+      const ba = await contractProcessor.fetch({
+        params: options,  
+      });
+
+      let balance =  (parseInt(ba._hex))/ DECIMALS
+      
+      if ( balance && balance >= (20)) {
+        return true
+      } else {
+        return false
+      }
+
+       
+
+  }
+
+
+   
 
   async function getSongs(ipfs_hash){
 
@@ -120,7 +181,6 @@ const Home = () => {
     }
 
   }
-  //  getSongs("QmUgzjSTqnQDEHh1Rn7oPrdEMphLz7s347oBbxZeYAQhnq")
 
   useEffect(() => {
 
@@ -148,6 +208,7 @@ const Home = () => {
                   color="white"
                   text={(await getSongs(song.attributes.cid)).title}
               />
+              
 
               </Link>
           ]
@@ -158,11 +219,14 @@ const Home = () => {
         setTotalSongs(results.length)   
   }
 
+ 
+
   getCIDS()
+  
 }
   }, [isInitialized]);
 
-
+  
 
 
  
@@ -177,8 +241,10 @@ const Home = () => {
           <Form
              buttonConfig={{
               isLoading: sub,
-              loadingText: "Submitting Proposal",
+              loadingText: "Submitting proposal",
               text: "Submit",
+              disabled: "true"
+              
             }}
             data={[
               
@@ -198,10 +264,10 @@ const Home = () => {
             onSubmit={ async (e) => {
               setSub(true);
              
-              await allInOne(e.data[0].inputResult)
+              await canProposeCID(account) ? 
+                  
+                  await(allInOne(e.data[0].inputResult)) : alert("Not Enough Rank Tokens")
              
-
-              // console.log(`https://gateway.pinata.cloud/ipfs/${myipfsHash}`)
             }}
             title="Drop a hit anon!"
           
@@ -211,14 +277,14 @@ const Home = () => {
             
             </div>
 
-            Recent Proposals
+            Recent Songs
               <div style={{ marginTop: "30px" }}>
                 <Table
-                  columnsConfig="10% 70% 20%"
+                  columnsConfig=" 20% 80%"
                   data={hashes}
                   header={[
-                    <span>ID</span>,
-                    <span>Description</span>,
+                    // <span>ID</span>,
+                    <span>Title</span>,
                     <span>CID</span>,
                   ]}
                   pageSize={5}
