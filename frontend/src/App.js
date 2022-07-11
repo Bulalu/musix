@@ -5,8 +5,7 @@ import Home from "./pages/Home";
 import Proposal from "./pages/Proposal";
 import Fetchy from "./pages/FetchData";
 import Testu from "./pages/Testu";
-import moralisLogo from "./images/Moralis.png";
-import myLogo from "./images/me.png";
+
 import { ConnectButton } from "web3uikit";
 
 const App = () => {
