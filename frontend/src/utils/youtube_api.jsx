@@ -1,13 +1,13 @@
-// js
 import React from 'react';
 import YouTube from 'react-youtube';
 
-class Fetchy extends React.Component {
+class MyYoutube extends React.Component {
   render() {
+
     const { id = "IXUOPJDnzRg" } = this.props;
     const opts = {
-      height: '290',
-      width: '540',
+      height: '390',
+      width: '640',
       playerVars: {
         // https://developers.google.com/youtube/player_parameters
         autoplay: 0,
@@ -23,5 +23,4 @@ class Fetchy extends React.Component {
   }
 }
 
-
-export default Fetchy
+export default MyYoutube;

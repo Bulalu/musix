@@ -199,9 +199,12 @@ const Home = () => {
             <Link to="/proposal" state={{
               description: song.attributes.cid,
               color: "white",
-              text: "hello",
-              id: song.attributes.cid,
-              proposer: song.attributes.proposer
+              yt_link: (await getSongs(song.attributes.cid)).yt_link,
+              text: (await getSongs(song.attributes.cid)).title,
+              // id: "hee",
+              video_id: (await getSongs(song.attributes.cid)).id,
+              proposer: song.attributes.proposer,
+              
               
               }}>
                 <Tag
@@ -214,6 +217,8 @@ const Home = () => {
           ]
         )
         );
+
+        // console.log("TABLE MANNERS", results)
 
         setSongHashes(table)
         setTotalSongs(results.length)   

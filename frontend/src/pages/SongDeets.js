@@ -4,9 +4,6 @@ import { Tag, Widget, Blockie, Tooltip, Icon, Form, Table } from "web3uikit";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
-import axios from "axios";
-import MyYoutube from "../utils/youtube_api";
-
 
 const Proposal = () => {
 
@@ -14,7 +11,6 @@ const Proposal = () => {
   const { Moralis, isInitialized } = useMoralis();
   const [latestVote, setLatestVote] = useState();
   const [percUp, setPercUp] = useState(0);
-  const [song, setSong] = useState()
   const [percDown, setPercDown] = useState(0);
   const [votes, setVotes] = useState([]);
   const [sub, setSub] = useState(false);
@@ -63,16 +59,7 @@ const Proposal = () => {
         setVotes(votesDirection);
 
       }
-
-      async function fetchSong() {
-        const song = await getSongs(proposalDetails.id)
-        console.log("SONGI SONGI", proposalDetails.id)
-        setSong(song)
-
-      }
       getVotes();
-      // fetchSong()
-
 
     }
   }, [Moralis.Object, Moralis.Query, isInitialized, proposalDetails.id]);
@@ -128,24 +115,6 @@ const Proposal = () => {
 
   }
 
-  async function getSongs(ipfs_hash){
-
-    try {
-      const URL =  `https://gateway.pinata.cloud/ipfs/${ipfs_hash}`
-      const response = await axios.get(URL)
-      const data = await response.data
-      return data
-
-    } catch (error) {
-      console.log(error.response)
-      return error.response
-    }
-
-  }
-
-  // console.log("SDSDSD", song)
-
-
   return (
     <>
       <div className="contentProposal">
@@ -167,10 +136,78 @@ const Proposal = () => {
             </div>
           </div>
         </div>
-       
-        <MyYoutube id={proposalDetails.video_id} />
+        {latestVote && (
+        <div className="widgets">
+          <Widget info={latestVote.votesUp} title="Votes For">
+            <div className="extraWidgetInfo">
+              <div className="extraTitle">{percUp}%</div>
+              <div className="progress">
+                <div
+                  className="progressPercentage"
+                  style={{ width: `${percUp}%` }}
+                ></div>
+              </div>
+            </div>
+          </Widget>
+          <Widget info={latestVote.votesDown} title="Votes Against">
+            <div className="extraWidgetInfo">
+              <div className="extraTitle">{percDown}%</div>
+              <div className="progress">
+                <div
+                  className="progressPercentage"
+                  style={{ width: `${percDown}%` }}
+                ></div>
+              </div>
+            </div>
+          </Widget>
+        </div>
+        )}
+        <div className="votesDiv">
+          <Table
+            style={{ width: "60%" }}
+            columnsConfig="90% 10%"
+            data={votes}
+            header={[<span>Address</span>, <span>Vote</span>]}
+            pageSize={5}
+          />
+
+          <Form
+            isDisabled={proposalDetails.text !== "Ongoing"}
+            style={{
+              width: "35%",
+              height: "250px",
+              border: "1px solid rgba(6, 158, 252, 0.2)",
+            }}
+            buttonConfig={{
+              isLoading: sub,
+              loadingText: "Casting Vote",
+              text: "Vote",
+              theme: "secondary",
+            }}
+            data={[
+              {
+                inputWidth: "100%",
+                name: "Cast Vote",
+                options: ["For", "Against"],
+                type: "radios",
+                validation: {
+                  required: true,
+                },
+              },
+            ]}
+            onSubmit={(e) => {
+              if (e.data[0].inputResult[0] === "For") {
+                castVote(true);
+              } else {
+                castVote(false);
+              }
+              setSub(true);
+            }}
+            title="Cast Vote"
+          />
+        </div>
       </div>
-      {/* <div className="voting"></div> */}
+      <div className="voting"></div>
     </>
   );
 };
