@@ -3,7 +3,6 @@ import "./pages.css";
 import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero} from "web3uikit";
 import { Link } from "react-router-dom";
 import { useMoralis, useMoralisWeb3Api, useWeb3ExecuteFunction} from "react-moralis";
-import { MDBCard, MDBCardBody, MDBCardTitle, MDBCardText, MDBCardImage, MDBBtn } from 'mdb-react-ui-kit';
 import axios from "axios";
 import {} from 'dotenv/config'
 import { Alert } from '@mui/material';
