@@ -10,7 +10,7 @@ import MyYoutube from "../utils/youtube_api";
 
 const Proposal = () => {
 
-  const { state: proposalDetails } = useLocation();
+  const { state: songDetails } = useLocation();
   const { Moralis, isInitialized } = useMoralis();
   const [latestVote, setLatestVote] = useState();
   const [percUp, setPercUp] = useState(0);
@@ -27,7 +27,7 @@ const Proposal = () => {
         
         const Votes = Moralis.Object.extend("Votes");
         const query = new Moralis.Query(Votes);
-        query.equalTo("proposal", proposalDetails.id);
+        query.equalTo("proposal", songDetails.id);
         query.descending("createdAt");
         const results = await query.find();
         if (results.length > 0) {
@@ -65,8 +65,8 @@ const Proposal = () => {
       }
 
       async function fetchSong() {
-        const song = await getSongs(proposalDetails.id)
-        console.log("SONGI SONGI", proposalDetails.id)
+        const song = await getSongs(songDetails.id)
+        console.log("SONGI SONGI", songDetails.id)
         setSong(song)
 
       }
@@ -75,7 +75,7 @@ const Proposal = () => {
 
 
     }
-  }, [Moralis.Object, Moralis.Query, isInitialized, proposalDetails.id]);
+  }, [Moralis.Object, Moralis.Query, isInitialized, songDetails.id]);
 
 
 
@@ -105,7 +105,7 @@ const Proposal = () => {
         },
       ],
       params: {
-        _id: proposalDetails.id,
+        _id: songDetails.id,
         _vote: status,
       },
     };
@@ -156,19 +156,19 @@ const Proposal = () => {
               Overview
             </div>
           </Link>
-          <div>{proposalDetails.description}</div>
+          <div>{songDetails.description}</div>
           <div className="proposalOverview">
-            <Tag color={proposalDetails.color} text={proposalDetails.text} />
+            <Tag color={songDetails.color} text={songDetails.text} />
             <div className="proposer">
               <span>Proposed By </span>
-              <Tooltip content={proposalDetails.proposer}>
-                <Blockie seed={proposalDetails.proposer} />
+              <Tooltip content={songDetails.proposer}>
+                <Blockie seed={songDetails.proposer} />
               </Tooltip>
             </div>
           </div>
         </div>
        
-        <MyYoutube id={proposalDetails.video_id} />
+        <MyYoutube id={songDetails.video_id} />
       </div>
       {/* <div className="voting"></div> */}
     </>
