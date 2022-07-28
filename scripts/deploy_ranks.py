@@ -16,8 +16,8 @@ def billboard():
     # meg = accounts[2]
 
     token_contract = rank_token()
-    proposal_cost = 20 #20 * 10
-    upvote_cost = 10
+    proposal_cost = Web3.toWei(0.1, 'ether')
+    upvote_cost = Web3.toWei(0.01, 'ether')
     amount = 1_000_000 * 10**18
 
     if len(Billboard) > 0:
@@ -30,9 +30,9 @@ def billboard():
 
         token_contract.approve(contract, amount, {"from":owner})
         #init fns
-        tx = contract.setProposalCost(proposal_cost, {"from": owner})
-        # print(tx.events)
-        contract.setUpvoteCost(upvote_cost, {"from": owner})
+        # tx = contract.setProposalCost(proposal_cost, {"from": owner})
+        # # print(tx.events)
+        # contract.setUpvoteCost(upvote_cost, {"from": owner})
         return contract
 
 def propose_song():
@@ -40,11 +40,13 @@ def propose_song():
     # stewie = accounts[1]
     # meg = accounts[2]
     billboard_contract = billboard()
+    proposal_cost = Web3.toWei(0.1, 'ether')
+    print(owner.balance() > proposal_cost)
 
-    CID = 'QmZSvz8s9pMEAMhzy1tzunU2xBP2g25de48y6buM8ssYZW'
+    CID = 'QmNe9bWiE4dN4CsLDBHRKY4V74cvoVE4J9wftjGonZD1qx'
     # take note of the token grant
     # this only works because owner is the admin
-    billboard_contract.propose(CID, owner, {"from": owner})
+    billboard_contract.propose(CID, {"from": owner, "value": proposal_cost})
     
 def getter():
     account = get_account(1)
@@ -55,7 +57,9 @@ def getter():
 
 def main():
     # billboard()
-    propose_song()
+    # propose_song()
+    # billboard()
+    print(Billboard[-1])
     # getter()
    
    

@@ -64,7 +64,7 @@ const Home = () => {
 
   // submitting hash to contract
   let options = {
-    contractAddress: "0xf72802C65532818041ad8d904F73be68741b4B26",
+    contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
     functionName: "propose",
     abi: [
       {
@@ -73,28 +73,26 @@ const Home = () => {
             "internalType": "string",
             "name": "cid",
             "type": "string"
-          },
-          {
-            "internalType": "address",
-            "name": "_proposer",
-            "type": "address"
           }
         ],
         "name": "propose",
         "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "payable",
         "type": "function"
       }
     ],
     params: {
       cid: ipfs_hash,
-      _proposer: account
+      // _proposer: account
 
-    }
+    },
+
+    msgValue: Moralis.Units.ETH("0.1")
   }
 
   await contractProcessor.fetch({
     params: options,
+    
     onSuccess: () => {
       <Alert severity="success" color="info">
             Awesome, https://gateway.pinata.cloud/ipfs/{myipfsHash}
@@ -118,7 +116,7 @@ const Home = () => {
   async function canProposeCID(account) {
     
       let options = {
-        contractAddress: "0xA830FDEe034dD2aED4AC148e8F89f966303d980E",
+        contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
         functionName: "balanceOf",
         abi: [
           {
@@ -187,7 +185,7 @@ const Home = () => {
 
       async function getCIDS() {
 
-        const Songs = Moralis.Object.extend("Songs");
+        const Songs = Moralis.Object.extend("NewSongs");
         const query = new Moralis.Query(Songs);
         query.descending("createdAt");
         const results = await query.find();
@@ -267,10 +265,10 @@ const Home = () => {
 
             onSubmit={ async (e) => {
               setSub(true);
-             
-              await canProposeCID(account) ? 
+              await(allInOne(e.data[0].inputResult))
+              // await canProposeCID(account) ? 
                   
-                  await(allInOne(e.data[0].inputResult)) : alert("Not Enough Rank Tokens")
+              //     await(allInOne(e.data[0].inputResult)) : alert("Not Enough Rank Tokens")
              
             }}
             title="Drop a hit anon!"

@@ -18,8 +18,8 @@ import "../interfaces/IERC20.sol";
     uint8 public  constant DECIMALS = 6;
 
     
-    uint256 public proposalCost; // 20 rank tokens
-    uint256 public upvoteCost;   // 10 rank tokens
+    uint256 public proposalCost = 0.1 ether;// 20 rank tokens
+    uint256 public upvoteCost = 0.01 ether;   // 10 rank tokens
     address public tokenAddress;
     IERC20 rankToken;
 
@@ -60,7 +60,7 @@ import "../interfaces/IERC20.sol";
     ****** ******* ****** ****** ****/
 
     event SongProposed(address indexed proposer, string cid);
-    event SongUpvoted(address indexed upvoter, string cid);
+    event SongUpvoted(address indexed upvoter, string cid, uint256 amount);
     event Withdrawal(address indexed withdrawer, string cid, uint tokens);
     event UpdateProposalCost(address indexed proposer, uint amount);
     event UpdateUpvoteCost(address indexed proposer, uint amount);
@@ -107,11 +107,11 @@ import "../interfaces/IERC20.sol";
         }
     }
 
-    function propose(string calldata cid, address _proposer) maybeTokenGrant public {
+    function propose(string calldata cid) payable public {
         require(songs[cid].numUpvoters == 0, "already proposed");
-        require(rankToken.balanceOf(msg.sender) >= proposalCost, "sorry bro, not enough tokens to propose");
+        require(msg.value >= proposalCost, "sorry bro, not enough tokens to propose");
 
-        rankToken.transferFrom(msg.sender, address(this), proposalCost);
+        // rankToken.transferFrom(msg.sender, address(this), proposalCost);
         
         Song storage song = songs[cid];
         song.submittedInBlock = block.number;
@@ -120,7 +120,7 @@ import "../interfaces/IERC20.sol";
         song.allTimeUpvotes += proposalCost;
         song.numUpvoters++;
         song.upvotes[msg.sender].index = song.numUpvoters;
-        song.proposer = _proposer;
+        song.proposer = msg.sender;
 
         emit SongProposed(msg.sender, cid);
 
@@ -129,7 +129,27 @@ import "../interfaces/IERC20.sol";
 
 
 
-    
+    function upvote(string calldata cid) external payable {
+        require(msg.value >= upvoteCost, "BillBoard: Not enough tokens to upvote");
+
+        Song storage song = songs[cid];
+        uint256 amount = msg.value;
+
+        require(song.upvotes[msg.sender].index == 0, "you have already upvoted this song");
+
+        song.currentUpvotes += amount;
+        song.allTimeUpvotes += amount;
+        song.numUpvoters++;
+        song.upvotes[msg.sender].index = song.numUpvoters;
+
+        emit SongUpvoted(msg.sender, cid, msg.value);
+    }
+
+
+    // function withdrawETH() external onlyOwner {
+    //     uint256 balance = address(this).balance;
+    //     address(payable(address(this)).transfer(balance, msg.sender);
+    // }
 
 
 
