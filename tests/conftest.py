@@ -33,8 +33,9 @@ def deployed():
     vault = Vault.deploy(USDC_AVAX, name, symbol, {"from": deployer})
     # initialize shit
     vault.setFeePercent(FEE, {"from": deployer})
+    vault.setHarvestDelay(HARVEST_DELAY, {"from": deployer})
     vault.setHarvestWindow(HARVEST_WINDOW, {"from": deployer})
-    # vault.setHarvestDelay(HARVEST_DELAY, {"from": deployer})
+    
     vault.initialize({"from": deployer})
 
 
