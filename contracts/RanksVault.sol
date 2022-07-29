@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.10;
+pragma solidity ^0.8.10;
 
 import {Auth} from "./Solmate/auth/Auth.sol";
 import {ERC4626} from "./Solmate/tokens/ERC4626.sol";
-
+import "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeCastLib} from "./Solmate/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "./Solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "./Solmate/utils/FixedPointMathLib.sol";
@@ -16,7 +16,7 @@ import {Strategy, ERC20Strategy, ETHStrategy} from "../interfaces/MyStrategy.sol
 /// @author Transmissions11 and JetJadeja
 /// @notice Flexible, minimalist, and gas-optimized yield
 /// aggregator for earning interest on any ERC20 token.
-contract Vault is ERC4626, Auth {
+contract Vault is ERC4626, Ownable {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
@@ -42,16 +42,19 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Creates a new Vault that accepts a specific underlying token.
     /// @param _UNDERLYING The ERC20 compliant token the Vault should accept.
-    constructor(ERC20 _UNDERLYING)
+    constructor(
+        ERC20 _UNDERLYING,
+        string memory name_,
+        string memory symbol_)
         ERC4626(
             // Underlying token
             _UNDERLYING,
             // ex: Ranks USDC Stablecoin Vault
-            string(abi.encodePacked("Ranks ", _UNDERLYING.name(), " Vault")),
+            name_,
             // ex: rvDAI
-            string(abi.encodePacked("rv", _UNDERLYING.symbol()))
+            symbol_
         )
-        Auth(Auth(msg.sender).owner(), Auth(msg.sender).authority())
+       
     {
         UNDERLYING = _UNDERLYING;
 
@@ -77,7 +80,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Sets a new fee percentage.
     /// @param newFeePercent The new fee percentage.
-    function setFeePercent(uint256 newFeePercent) external requiresAuth {
+    function setFeePercent(uint256 newFeePercent) external onlyOwner {
         // A fee percentage over 100% doesn't make sense.
         require(newFeePercent <= 1e18, "FEE_TOO_HIGH");
 
@@ -122,7 +125,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Sets a new harvest window.
     /// @param newHarvestWindow The new harvest window.
     /// @dev The Vault's harvestDelay must already be set before calling.
-    function setHarvestWindow(uint128 newHarvestWindow) external requiresAuth {
+    function setHarvestWindow(uint128 newHarvestWindow) external onlyOwner {
         // A harvest window longer than the harvest delay doesn't make sense.
         require(newHarvestWindow <= harvestDelay, "WINDOW_TOO_LONG");
 
@@ -137,7 +140,7 @@ contract Vault is ERC4626, Auth {
     /// @dev If the current harvest delay is 0, meaning it has not
     /// been set before, it will be updated immediately, otherwise
     /// it will be scheduled to take effect after the next harvest.
-    function setHarvestDelay(uint64 newHarvestDelay) external requiresAuth {
+    function setHarvestDelay(uint64 newHarvestDelay) external onlyOwner {
         // A harvest delay of 0 makes harvests vulnerable to sandwich attacks.
         require(newHarvestDelay != 0, "DELAY_CANNOT_BE_ZERO");
 
@@ -173,7 +176,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Set a new target float percentage.
     /// @param newTargetFloatPercent The new target float percentage.
-    function setTargetFloatPercent(uint256 newTargetFloatPercent) external requiresAuth {
+    function setTargetFloatPercent(uint256 newTargetFloatPercent) external onlyOwner {
         // A target float percentage over 100% doesn't make sense.
         require(newTargetFloatPercent <= 1e18, "TARGET_TOO_HIGH");
 
@@ -199,7 +202,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Sets whether the Vault treats the underlying as WETH.
     /// @param newUnderlyingIsWETH Whether the Vault should treat the underlying as WETH.
     /// @dev The underlying token must have 18 decimals, to match Ether's decimal scheme.
-    function setUnderlyingIsWETH(bool newUnderlyingIsWETH) external requiresAuth {
+    function setUnderlyingIsWETH(bool newUnderlyingIsWETH) external onlyOwner {
         // Ensure the underlying token's decimals match ETH if is WETH being set to true.
         require(!newUnderlyingIsWETH || UNDERLYING.decimals() == 18, "WRONG_DECIMALS");
 
@@ -349,7 +352,7 @@ contract Vault is ERC4626, Auth {
     /// @param strategies The trusted strategies to harvest.
     /// @dev Will always revert if called outside of an active
     /// harvest window or before the harvest delay has passed.
-    function harvest(Strategy[] calldata strategies) external requiresAuth {
+    function harvest(Strategy[] calldata strategies) external onlyOwner {
         // If this is the first harvest after the last window:
         if (block.timestamp >= lastHarvest + harvestDelay) {
             // Set the harvest window's start timestamp.
@@ -451,7 +454,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Deposit a specific amount of float into a trusted strategy.
     /// @param strategy The trusted strategy to deposit into.
     /// @param underlyingAmount The amount of underlying tokens in float to deposit.
-    function depositIntoStrategy(Strategy strategy, uint256 underlyingAmount) external requiresAuth {
+    function depositIntoStrategy(Strategy strategy, uint256 underlyingAmount) external onlyOwner {
         // A strategy must be trusted before it can be deposited into.
         require(getStrategyData[strategy].trusted, "UNTRUSTED_STRATEGY");
 
@@ -486,7 +489,7 @@ contract Vault is ERC4626, Auth {
     /// @param strategy The strategy to withdraw from.
     /// @param underlyingAmount  The amount of underlying tokens to withdraw.
     /// @dev Withdrawing from a strategy will not remove it from the withdrawal stack.
-    function withdrawFromStrategy(Strategy strategy, uint256 underlyingAmount) external requiresAuth {
+    function withdrawFromStrategy(Strategy strategy, uint256 underlyingAmount) external onlyOwner {
         // A strategy must be trusted before it can be withdrawn from.
         require(getStrategyData[strategy].trusted, "UNTRUSTED_STRATEGY");
 
@@ -524,7 +527,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Stores a strategy as trusted, enabling it to be harvested.
     /// @param strategy The strategy to make trusted.
-    function trustStrategy(Strategy strategy) external requiresAuth {
+    function trustStrategy(Strategy strategy) external onlyOwner {
         // Ensure the strategy accepts the correct underlying token.
         // If the strategy accepts ETH the Vault should accept WETH, it'll handle wrapping when necessary.
         require(
@@ -540,7 +543,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Stores a strategy as untrusted, disabling it from being harvested.
     /// @param strategy The strategy to make untrusted.
-    function distrustStrategy(Strategy strategy) external requiresAuth {
+    function distrustStrategy(Strategy strategy) external onlyOwner {
         // Store the strategy as untrusted.
         getStrategyData[strategy].trusted = false;
 
@@ -684,7 +687,7 @@ contract Vault is ERC4626, Auth {
     /// @param strategy The strategy to be inserted at the front of the withdrawal stack.
     /// @dev Strategies that are untrusted, duplicated, or have no balance are
     /// filtered out when encountered at withdrawal time, not validated upfront.
-    function pushToWithdrawalStack(Strategy strategy) external requiresAuth {
+    function pushToWithdrawalStack(Strategy strategy) external onlyOwner {
         // Ensure pushing the strategy will not cause the stack exceed its limit.
         require(withdrawalStack.length < MAX_WITHDRAWAL_STACK_SIZE, "STACK_FULL");
 
@@ -697,7 +700,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Removes the strategy at the tip of the withdrawal stack.
     /// @dev Be careful, another authorized user could push a different strategy
     /// than expected to the stack while a popFromWithdrawalStack transaction is pending.
-    function popFromWithdrawalStack() external requiresAuth {
+    function popFromWithdrawalStack() external onlyOwner {
         // Get the (soon to be) popped strategy.
         Strategy poppedStrategy = withdrawalStack[withdrawalStack.length - 1];
 
@@ -711,7 +714,7 @@ contract Vault is ERC4626, Auth {
     /// @param newStack The new withdrawal stack.
     /// @dev Strategies that are untrusted, duplicated, or have no balance are
     /// filtered out when encountered at withdrawal time, not validated upfront.
-    function setWithdrawalStack(Strategy[] calldata newStack) external requiresAuth {
+    function setWithdrawalStack(Strategy[] calldata newStack) external onlyOwner {
         // Ensure the new stack is not larger than the maximum stack size.
         require(newStack.length <= MAX_WITHDRAWAL_STACK_SIZE, "STACK_TOO_BIG");
 
@@ -726,7 +729,7 @@ contract Vault is ERC4626, Auth {
     /// @param replacementStrategy The strategy to override the index with.
     /// @dev Strategies that are untrusted, duplicated, or have no balance are
     /// filtered out when encountered at withdrawal time, not validated upfront.
-    function replaceWithdrawalStackIndex(uint256 index, Strategy replacementStrategy) external requiresAuth {
+    function replaceWithdrawalStackIndex(uint256 index, Strategy replacementStrategy) external onlyOwner {
         // Get the (soon to be) replaced strategy.
         Strategy replacedStrategy = withdrawalStack[index];
 
@@ -738,7 +741,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Moves the strategy at the tip of the stack to the specified index and pop the tip off the stack.
     /// @param index The index of the strategy in the withdrawal stack to replace with the tip.
-    function replaceWithdrawalStackIndexWithTip(uint256 index) external requiresAuth {
+    function replaceWithdrawalStackIndexWithTip(uint256 index) external onlyOwner {
         // Get the (soon to be) previous tip and strategy we will replace at the index.
         Strategy previousTipStrategy = withdrawalStack[withdrawalStack.length - 1];
         Strategy replacedStrategy = withdrawalStack[index];
@@ -755,7 +758,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Swaps two indexes in the withdrawal stack.
     /// @param index1 One index involved in the swap
     /// @param index2 The other index involved in the swap.
-    function swapWithdrawalStackIndexes(uint256 index1, uint256 index2) external requiresAuth {
+    function swapWithdrawalStackIndexes(uint256 index1, uint256 index2) external onlyOwner {
         // Get the (soon to be) new strategies at each index.
         Strategy newStrategy2 = withdrawalStack[index1];
         Strategy newStrategy1 = withdrawalStack[index2];
@@ -779,7 +782,7 @@ contract Vault is ERC4626, Auth {
     /// @notice Claims fees accrued from harvests.
     /// @param rvTokenAmount The amount of rvTokens to claim.
     /// @dev Accrued fees are measured as rvTokens held by the Vault.
-    function claimFees(uint256 rvTokenAmount) external requiresAuth {
+    function claimFees(uint256 rvTokenAmount) external onlyOwner {
         emit FeesClaimed(msg.sender, rvTokenAmount);
 
         // Transfer the provided amount of rvTokens to the caller.
@@ -800,7 +803,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Initializes the Vault, enabling it to receive deposits.
     /// @dev All critical parameters must already be set before calling.
-    function initialize() external requiresAuth {
+    function initialize() external onlyOwner {
         // Ensure the Vault has not already been initialized.
         require(!isInitialized, "ALREADY_INITIALIZED");
 
@@ -815,7 +818,7 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Self destructs a Vault, enabling it to be redeployed.
     /// @dev Caller will receive any ETH held as float in the Vault.
-    function destroy() external requiresAuth {
+    function destroy() external onlyOwner {
         selfdestruct(payable(msg.sender));
     }
 
