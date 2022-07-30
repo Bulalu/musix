@@ -28,12 +28,11 @@ def test_r_we_winning(deployed, whale, usdc):
     # whale deposits into vault
     balance = usdc.balanceOf(whale)
     print(f"Whale USDC Balance: {balance/10**6}")
-
     amount_to_deposit_whale = balance * 0.6
     usdc.approve(vault, balance, {"from": whale})
     vault.deposit(amount_to_deposit_whale, whale, {"from": whale})
    
-    # in USDC
+   
     vault_holdings = vault.totalFloat()
     shares = vault.balanceOf(whale) #rvUSDC
     print(f"Whale Shares: {shares/10**6}")
@@ -52,8 +51,8 @@ def test_r_we_winning(deployed, whale, usdc):
     assert strategy_debt == amount_to_deposit_vault == int(vault.getStrategyData(strategy)["balance"])
     assert new_vault_holdings == vault_holdings - amount_to_deposit_vault
    
+   
     balance_of_usdc_before_harvest = strategy.estimatedTotalAssets()
-    
     # wingardium leviosa  🧪 ✨ 💸
     print("strategy at work ser!")
     strategy.actualTotalAssets({"from": deployer})

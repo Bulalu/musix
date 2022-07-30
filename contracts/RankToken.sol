@@ -33,7 +33,7 @@ contract RankToken is Context, AccessControlEnumerable, ERC20Burnable, ERC20Paus
     */
     // allow testers to mint only once
     mapping(address => bool) public testers;
-    uint256 public maxAmount = 40 * 10 ** 18;
+    uint256 public maxAmount = 100 * 10 ** 18;
     constructor( address owner, uint256 initialSupply) ERC20("RANKS USDC", "rUSDC") {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
