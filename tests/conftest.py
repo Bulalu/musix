@@ -1,5 +1,5 @@
 
-from brownie import accounts, web3, Wei, chain, interface, Vault, accounts, Vectorfied
+from brownie import accounts, web3, Wei, chain, Contract, interface, Vault, accounts, Vectorfied
 from config import *
 from dotmap import DotMap
 import pytest
@@ -42,6 +42,8 @@ def deployed():
     # Strategy
     strategy = Vectorfied.deploy(vault, POOL, ROUTER, {"from": deployer})
 
+    vault.trustStrategy(strategy, {"from": deployer})
+
     # tokens
     usdc = interface.IERC20(USDC_AVAX)
     ptp = interface.IERC20(PTP)
@@ -56,3 +58,16 @@ def deployed():
         vtx=vtx,
 
     )
+
+
+@pytest.fixture
+def usdc():
+    yield Contract.from_explorer('0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E')
+
+# @pytest.fixture
+# def pool():
+#     yield Contract.from_explorer("0x1338b4065e25AD681c511644Aa319181FC3d64CC")
+
+@pytest.fixture
+def whale(accounts):
+    yield accounts.at("0x52A258ED593C793251a89bfd36caE158EE9fC4F8", force=True)

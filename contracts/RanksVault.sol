@@ -531,7 +531,7 @@ contract Vault is ERC4626, Ownable {
         // Ensure the strategy accepts the correct underlying token.
         // If the strategy accepts ETH the Vault should accept WETH, it'll handle wrapping when necessary.
         require(
-            strategy.isCEther() ? underlyingIsWETH : ERC20Strategy(address(strategy)).underlying() == UNDERLYING,
+             ERC20Strategy(address(strategy)).underlying() == UNDERLYING,
             "WRONG_UNDERLYING"
         );
 

@@ -1,26 +1,43 @@
 import pytest
 from brownie import Contract
+from config import *
 
+#ockedProfit() 
+def test_vault_config(deployed):
+    vault = deployed.vault
+    strategy = deployed.strategy
 
-@pytest.fixture
-def usdc():
-    yield Contract.from_explorer('0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E')
+    assert vault.name() == "Ranks USDC Stablecoin Vault"
+    assert vault.symbol() == "rvUSDC"
+    assert vault.feePercent() == FEE
+    assert vault.harvestDelay() == HARVEST_DELAY
+    assert vault.harvestWindow() == HARVEST_WINDOW
+    assert vault.UNDERLYING() == USDC_AVAX
+    assert vault.isInitialized() == True
+    assert vault.totalFloat() == 0
+    assert strategy.underlying() == vault.UNDERLYING()
+    assert vault.getStrategyData(strategy)["trusted"] == True
+    assert vault.getStrategyData(strategy)["balance"] == 0
 
-@pytest.fixture
-def pool():
-    yield Contract.from_explorer("0x1338b4065e25AD681c511644Aa319181FC3d64CC")
-
-@pytest.fixture
-def whale(accounts):
-    yield accounts.at("0x52A258ED593C793251a89bfd36caE158EE9fC4F8", force=True)
-
-
-def test_avax_shit(deployed):
+def test_avax_shit(deployed, whale, usdc):
    
     vault = deployed.vault
     strategy = deployed.strategy
     print("Vault:", vault)
     print("Strategy:", strategy)
+
+    # whale deposits into vault
+    balance = usdc.balanceOf(whale)
+    print("Balance:", balance / 10 ** 18)
+    amount_to_deposit = balance * 0.6
+    usdc.approve(vault, balance, {"from": whale})
+    vault.deposit(amount_to_deposit, whale, {"from": whale})
+    # in USDC
+    vault_holdings = vault.totalFloat()
+    assert vault_holdings == amount_to_deposit
+    shares = vault.balanceOf(whale) #rvUSDC
+    print("Shares:", shares )
+
 
 
 
