@@ -23,20 +23,34 @@ def test_avax_shit(deployed, whale, usdc):
    
     vault = deployed.vault
     strategy = deployed.strategy
-    print("Vault:", vault)
-    print("Strategy:", strategy)
+    deployer = deployed.deployer
+   
 
     # whale deposits into vault
     balance = usdc.balanceOf(whale)
-    print("Balance:", balance / 10 ** 18)
-    amount_to_deposit = balance * 0.6
+    print(f"Whale USDC Balance: {balance}")
+
+    amount_to_deposit_whale = balance * 0.6
     usdc.approve(vault, balance, {"from": whale})
-    vault.deposit(amount_to_deposit, whale, {"from": whale})
+    vault.deposit(amount_to_deposit_whale, whale, {"from": whale})
+   
     # in USDC
     vault_holdings = vault.totalFloat()
-    assert vault_holdings == amount_to_deposit
     shares = vault.balanceOf(whale) #rvUSDC
-    print("Shares:", shares )
+    print(f"Whale Shares: {shares}")
+    assert shares > 0
+    assert shares == vault.previewDeposit(amount_to_deposit_whale)
+    assert vault_holdings == amount_to_deposit_whale
+    
+    
+
+    # vault deposits 90% USDC to strategy
+    amount_to_deposit_vault = vault_holdings * 0.9
+    vault.depositIntoStrategy(strategy, amount_to_deposit_vault, {"from": deployer})
+    new_vault_holdings = vault.totalFloat()
+    assert strategy.currentDebt() == amount_to_deposit_vault == vault.getStrategyData(strategy)["balance"]
+    assert new_vault_holdings == vault_holdings - amount_to_deposit_vault
+    # vault.approve(strategy, amount_to_deposit_vault, {"from": vault})
 
 
 

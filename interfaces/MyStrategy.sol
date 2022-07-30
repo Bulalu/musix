@@ -13,10 +13,10 @@ abstract contract Strategy is ERC20 {
     function isCEther() external view virtual returns (bool);
 
     /// @notice Withdraws a specific amount of underlying tokens from the strategy.
-    /// @param amount The amount of underlying tokens to withdraw.
-    /// @return An error code, or 0 if the withdrawal was successful.
-    function redeemUnderlying(uint256 amount) external virtual returns (uint256);
-
+    /// @param _amountNeeded The amount of underlying tokens to withdraw.
+   
+    // function redeemUnderlying(uint256 amount) external virtual returns (uint256);
+    function withdraw(uint256 _amountNeeded) external virtual returns (uint256 err, uint256 amountFreed);
     /// @notice Returns a user's strategy balance in underlying tokens.
     /// @param user The user to get the underlying balance of.
     /// @return The user's strategy balance in underlying tokens.
@@ -37,7 +37,8 @@ abstract contract ERC20Strategy is Strategy {
     /// @notice Deposit a specific amount of underlying tokens into the strategy.
     /// @param amount The amount of underlying tokens to deposit.
     /// @return An error code, or 0 if the deposit was successful.
-    function mint(uint256 amount) external virtual returns (uint256);
+    // function mint(uint256 amount) external virtual returns (uint256);
+    function deposit(uint256 amount) external virtual returns (uint256);
 }
 
 /// @notice Minimal interface for Vault strategies that accept ETH.

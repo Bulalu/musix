@@ -306,4 +306,8 @@ contract Vectorfied is BaseStrategy {
         // TODO create an accurate price oracle
         return _amtInWei;
     }
+
+    function isCEther() public view returns (bool) {
+        return false;
+    }
 }

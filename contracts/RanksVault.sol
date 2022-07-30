@@ -469,20 +469,13 @@ contract Vault is ERC4626, Ownable {
 
         emit StrategyDeposit(msg.sender, strategy, underlyingAmount);
 
-        // We need to deposit differently if the strategy takes ETH.
-        if (strategy.isCEther()) {
-            // Unwrap the right amount of WETH.
-            WETH(payable(address(UNDERLYING))).withdraw(underlyingAmount);
+       
+        // Approve underlyingAmount to the strategy so we can deposit.
+        UNDERLYING.safeApprove(address(strategy), underlyingAmount);
 
-            // Deposit into the strategy and assume it will revert on error.
-            ETHStrategy(address(strategy)).mint{value: underlyingAmount}();
-        } else {
-            // Approve underlyingAmount to the strategy so we can deposit.
-            UNDERLYING.safeApprove(address(strategy), underlyingAmount);
-
-            // Deposit into the strategy and revert if it returns an error code.
-            require(ERC20Strategy(address(strategy)).mint(underlyingAmount) == 0, "MINT_FAILED");
-        }
+        // Deposit into the strategy and revert if it returns an error code.
+        require(ERC20Strategy(address(strategy)).deposit(underlyingAmount) == 0, "MINT_FAILED");
+        
     }
 
     /// @notice Withdraw a specific amount of underlying tokens from a strategy.
@@ -503,12 +496,12 @@ contract Vault is ERC4626, Ownable {
         }
 
         emit StrategyWithdrawal(msg.sender, strategy, underlyingAmount);
+        (uint256 status, uint256 amount_freed) = strategy.withdraw(underlyingAmount);
 
         // Withdraw from the strategy and revert if it returns an error code.
-        require(strategy.redeemUnderlying(underlyingAmount) == 0, "REDEEM_FAILED");
+        require(status == 0, "REDEEM_FAILED");
 
-        // Wrap the withdrawn Ether into WETH if necessary.
-        if (strategy.isCEther()) WETH(payable(address(UNDERLYING))).deposit{value: underlyingAmount}();
+     
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -655,7 +648,10 @@ contract Vault is ERC4626, Ownable {
                 emit StrategyWithdrawal(msg.sender, strategy, amountToPull);
 
                 // Withdraw from the strategy and revert if returns an error code.
-                require(strategy.redeemUnderlying(amountToPull) == 0, "REDEEM_FAILED");
+                (uint256 status, uint256 amount_freed) = strategy.withdraw(underlyingAmount);
+
+                // Withdraw from the strategy and revert if it returns an error code.
+                require(status == 0, "REDEEM_FAILED");
 
                 // If we fully depleted the strategy:
                 if (strategyBalanceAfterWithdrawal == 0) {
