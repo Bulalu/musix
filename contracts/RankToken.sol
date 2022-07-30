@@ -31,8 +31,10 @@ contract RankToken is Context, AccessControlEnumerable, ERC20Burnable, ERC20Paus
      *
      * See {ERC20-constructor}.
     */
-
-    constructor( address owner, uint256 initialSupply) ERC20("RANKS COIN", "RANKS") {
+    // allow testers to mint only once
+    mapping(address => bool) public testers;
+    uint256 public maxAmount = 40 * 10 ** 18;
+    constructor( address owner, uint256 initialSupply) ERC20("RANKS USDC", "rUSDC") {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
@@ -41,7 +43,7 @@ contract RankToken is Context, AccessControlEnumerable, ERC20Burnable, ERC20Paus
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 6;
+        return 18;
     }
 
     /**
@@ -53,10 +55,18 @@ contract RankToken is Context, AccessControlEnumerable, ERC20Burnable, ERC20Paus
      *
      * - the caller must have the `MINTER_ROLE`.
      */
-    function mint(address to, uint256 amount) public virtual {
-        require(hasRole(MINTER_ROLE, _msgSender()), "ERC20PresetMinterPauser: must have minter role to mint");
-        _mint(to, amount);
+    function mint( uint256 amount) public virtual {
+        // require(hasRole(MINTER_ROLE, _msgSender()), "ERC20PresetMinterPauser: must have minter role to mint");
+        require(testers[msg.sender] == false && amount <= maxAmount, "ERC20PresetMinterPauser: cannot mint more than max amount");
+        testers[msg.sender] = true;
+        _mint(msg.sender, amount);
     }
+    //  function mint(address to, uint256 amount) public virtual {
+    //     // require(hasRole(MINTER_ROLE, _msgSender()), "ERC20PresetMinterPauser: must have minter role to mint");
+    //     require(testers());
+    //     _mint(to, amount);
+    // }
+
 
     /**
      * @dev Pauses all token transfers.

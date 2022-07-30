@@ -1,5 +1,5 @@
 import pytest
-from brownie import Contract
+from brownie import Contract, chain
 from config import *
 
 #ockedProfit() 
@@ -19,16 +19,15 @@ def test_vault_config(deployed):
     assert vault.getStrategyData(strategy)["trusted"] == True
     assert vault.getStrategyData(strategy)["balance"] == 0
 
-def test_avax_shit(deployed, whale, usdc):
+def test_r_we_winning(deployed, whale, usdc):
    
+    deployer = deployed.deployer
     vault = deployed.vault
     strategy = deployed.strategy
-    deployer = deployed.deployer
-   
-
+    
     # whale deposits into vault
     balance = usdc.balanceOf(whale)
-    print(f"Whale USDC Balance: {balance}")
+    print(f"Whale USDC Balance: {balance/10**6}")
 
     amount_to_deposit_whale = balance * 0.6
     usdc.approve(vault, balance, {"from": whale})
@@ -37,24 +36,36 @@ def test_avax_shit(deployed, whale, usdc):
     # in USDC
     vault_holdings = vault.totalFloat()
     shares = vault.balanceOf(whale) #rvUSDC
-    print(f"Whale Shares: {shares}")
+    print(f"Whale Shares: {shares/10**6}")
     assert shares > 0
     assert shares == vault.previewDeposit(amount_to_deposit_whale)
     assert vault_holdings == amount_to_deposit_whale
     
     
-
     # vault deposits 90% USDC to strategy
-    amount_to_deposit_vault = vault_holdings * 0.9
+    amount_to_deposit_vault = int(vault_holdings * 0.9)
     vault.depositIntoStrategy(strategy, amount_to_deposit_vault, {"from": deployer})
     new_vault_holdings = vault.totalFloat()
-    assert strategy.currentDebt() == amount_to_deposit_vault == vault.getStrategyData(strategy)["balance"]
+    # the amount of USDC that the strategy owes the vault
+    strategy_debt = int(strategy.currentDebt())
+
+    assert strategy_debt == amount_to_deposit_vault == int(vault.getStrategyData(strategy)["balance"])
     assert new_vault_holdings == vault_holdings - amount_to_deposit_vault
-    # vault.approve(strategy, amount_to_deposit_vault, {"from": vault})
+   
+    balance_of_usdc_before_harvest = strategy.estimatedTotalAssets()
+    
+    # wingardium leviosa  🧪 ✨ 💸
+    print("strategy at work ser!")
+    strategy.actualTotalAssets({"from": deployer})
+
+    chain.sleep(HARVEST_WINDOW + 10)
+    chain.mine()
+    strategy.actualTotalAssets({"from": deployer})
+    
+   
+    balance_of_usdc_after_harvest = strategy.estimatedTotalAssets()
+    assert balance_of_usdc_after_harvest > balance_of_usdc_before_harvest
+    print(f"Profit: ${(balance_of_usdc_after_harvest - balance_of_usdc_before_harvest)/10**6}")
 
 
 
-
-# >>> whale = accounts.at("0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245", force=True) 
-# >>>vault = Vault.deploy("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", {"from":whale}) 
-# brownie networks add Ethereum ganache-local host=http://127.0.0.1:7545 chainid=5777

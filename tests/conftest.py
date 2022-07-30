@@ -70,4 +70,4 @@ def usdc():
 
 @pytest.fixture
 def whale(accounts):
-    yield accounts.at("0x52A258ED593C793251a89bfd36caE158EE9fC4F8", force=True)
+    yield accounts.at("0xBF14DB80D9275FB721383a77C00Ae180fc40ae98", force=True)

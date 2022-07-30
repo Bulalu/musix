@@ -25,6 +25,17 @@ abstract contract Strategy is ERC20 {
 
     /// @notice Returns the Vault this Strategy is assigned to
     function vault() external virtual view returns (address);
+
+    /// @notice returns the current liquid value of the Strategy
+    /// @dev This call relys on outside contracts and has the potential to be manipulated
+    /// @return The value in Underlying the strategy currently holds
+    function estimatedTotalAssets() external virtual view returns (uint256);
+
+    /// @notice This is called to get an accurate non-manipulatable amount the strategy holds
+    /// Used by the vault to get an accurate account during the harvest
+    /// @dev may change the state pending on the current strategy being deployed
+    /// @return The actual amount of assets the strategy hold in underlying
+    function actualTotalAssets() external virtual returns(uint256);
 }
 
 /// @notice Minimal interface for Vault strategies that accept ERC20s.
