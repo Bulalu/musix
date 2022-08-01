@@ -1,4 +1,4 @@
-# ranks
+# Musix
 Musix is project I'm working on for the Nights and Weekends S1 hosted by buildspace.
 
 What if there was a music incentive platform that allowed users to spot high quality songs earlier than others? 
