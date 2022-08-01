@@ -1,4 +1,4 @@
-from brownie import accounts, Billboard
+from brownie import accounts, Musix
 import pytest
 import brownie
 from scripts.deploy_token import rank_token
@@ -12,31 +12,31 @@ def isolation(fn_isolation):
 
 
 
-def test_set_proposal_cost(billboard):
+def test_set_proposal_cost(musix, rank_token):
     owner = accounts[0]
     stewie = accounts[1]
     amount = 20
 
     with brownie.reverts("Ownable: caller is not the owner"):
-        billboard.setProposalCost(amount, {"from": stewie})
+        musix.setProposalCost(amount, {"from": stewie})
 
-    billboard.setProposalCost(amount, {"from": owner}) 
+    musix.setProposalCost(amount, {"from": owner}) 
 
-    assert  billboard.proposalCost() == amount * 10 ** DECIMALS
+    assert  musix.proposalCost() == amount * 10 ** DECIMALS
     
-def test_set_upvote_cost(billboard):
+def test_set_upvote_cost(musix):
     owner = accounts[0]
     stewie = accounts[1]
     amount = 20
 
     with brownie.reverts("Ownable: caller is not the owner"):
-        billboard.setUpvoteCost(amount, {"from": stewie})
+        musix.setUpvoteCost(amount, {"from": stewie})
 
-    billboard.setUpvoteCost(amount, {"from": owner}) 
+    musix.setUpvoteCost(amount, {"from": owner}) 
 
-    assert  billboard.upvoteCost() == amount * 10 ** DECIMALS
+    assert  musix.upvoteCost() == amount * 10 ** DECIMALS
 
-def test_set_proposal(billboard, rank_token):
+def test_set_proposal(musix, rank_token):
     owner = accounts[0]
     stewie = accounts[1]
     meg = accounts[2]
@@ -45,22 +45,22 @@ def test_set_proposal(billboard, rank_token):
     cid_2 = "QmZSvz8s9pMEAMhzy1tzunU2xBP2g25de48y6buM8ssWZA"
 
     rank_balance_before = rank_token.balanceOf(stewie)
-    billboard.tokenGrant({"from": stewie})
+    rank_token.transfer(stewie, token_grant, {"from": owner})
     assert rank_token.balanceOf(stewie) == token_grant
 
-    rank_token.approve(billboard, billboard.proposalCost(), {"from": stewie})
-    tx = billboard.propose(cid_1, {"from": stewie})
+    rank_token.approve(musix, musix.proposalCost(), {"from": stewie})
+    tx = musix.propose(cid_1, {"from": stewie})
 
     assert "SongProposed" in tx.events
-    assert rank_token.balanceOf(stewie) == token_grant - billboard.proposalCost()
+    assert rank_token.balanceOf(stewie) == token_grant - musix.proposalCost()
 
     with brownie.reverts("already proposed"):
-        billboard.propose(cid_1, {"from": stewie})
+        musix.propose(cid_1, {"from": stewie})
 
     rank_token.transfer(owner, rank_token.balanceOf(stewie), {"from":stewie})
 
     with brownie.reverts("sorry bro, not enough tokens to propose"):
-        billboard.propose(cid_2, {"from": stewie})
+        musix.propose(cid_2, {"from": stewie})
 
 
 

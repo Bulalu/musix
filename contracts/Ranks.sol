@@ -5,8 +5,7 @@ import "../interfaces/IERC20.sol";
 
 
 
-
- contract Billboard is Ownable {
+ contract Musix is Ownable {
     /* WTF does this do?
         A platform where users are incentived to find lit content before they get mass adoption.
         WHY?. i think its pretty cool when you have a chance to earn for finding a cool song from early on
@@ -15,13 +14,13 @@ import "../interfaces/IERC20.sol";
         - Promotes underground artist work
     */
 
-    uint8 public  constant DECIMALS = 6;
+    uint256 public  constant DECIMALS = 10**18;
 
     
-    uint256 public proposalCost = 0.1 ether;// 20 rank tokens
-    uint256 public upvoteCost = 0.01 ether;   // 10 rank tokens
+    uint256 public proposalCost = 20 * DECIMALS;
+    uint256 public upvoteCost = 10 * DECIMALS;   // 10 rank tokens
     address public tokenAddress;
-    IERC20 rankToken;
+    IERC20 underlying;
 
     struct Song {
         // Tracks the time when the song was initially submitted
@@ -66,7 +65,7 @@ import "../interfaces/IERC20.sol";
     event UpdateUpvoteCost(address indexed proposer, uint amount);
     constructor(address _address) {
         tokenAddress = _address;
-        rankToken = IERC20(_address);
+        underlying = IERC20(_address);
     }
 
 
@@ -80,6 +79,7 @@ import "../interfaces/IERC20.sol";
 
     }
 
+    //don't limit how much users can upvote for now
     function setUpvoteCost(uint256 _amount)  public onlyOwner {
         upvoteCost = _amount * (10 ** DECIMALS);
         emit UpdateUpvoteCost(msg.sender, _amount);
@@ -93,25 +93,19 @@ import "../interfaces/IERC20.sol";
     modifier maybeTokenGrant {
         if (receivedTokenGrant[msg.sender] == false) {
             receivedTokenGrant[msg.sender] = true;
-            rankToken.transferFrom(owner(), msg.sender, tokenGrantSize);
+            underlying.transferFrom(owner(), msg.sender, tokenGrantSize);
         }
         _;
     }
 
-    function tokenGrant() public {
-        // create a bool function where you can choose to stop the grant 
-        // inorder to avoid people claiming with new addresses
-        if (receivedTokenGrant[msg.sender] == false) {
-            receivedTokenGrant[msg.sender] = true;
-            rankToken.transferFrom(owner(), msg.sender, tokenGrantSize);
-        }
-    }
+  
 
     function propose(string calldata cid) payable public {
         require(songs[cid].numUpvoters == 0, "already proposed");
         require(msg.value >= proposalCost, "sorry bro, not enough tokens to propose");
+        
 
-        // rankToken.transferFrom(msg.sender, address(this), proposalCost);
+        underlying.transferFrom(msg.sender, address(this), proposalCost);
         
         Song storage song = songs[cid];
         song.submittedInBlock = block.number;
@@ -129,11 +123,13 @@ import "../interfaces/IERC20.sol";
 
 
 
-    function upvote(string calldata cid) external payable {
-        require(msg.value >= upvoteCost, "BillBoard: Not enough tokens to upvote");
+    function upvote(string calldata cid, uint256 amount) external payable {
+        require(msg.value >= upvoteCost, "Musix: Not enough tokens to upvote");
+        require(underlying.balanceOf(msg.sender) >= amount, "Musix: Not enough tokens to upvote");
 
         Song storage song = songs[cid];
-        uint256 amount = msg.value;
+        // uint256 amount = msg.value;
+        underlying.transferFrom(msg.sender, address(this), amount);
 
         require(song.upvotes[msg.sender].index == 0, "you have already upvoted this song");
 
