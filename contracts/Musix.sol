@@ -95,7 +95,7 @@ import "../interfaces/IERC20.sol";
 
     function propose(string calldata cid) payable public {
         require(songs[cid].numUpvoters == 0, "already proposed");
-        require(msg.value >= proposalCost, "sorry bro, not enough tokens to propose");
+        require(underlying.balanceOf(msg.sender) >= proposalCost, "sorry bro, not enough tokens to propose");
         
 
         underlying.transferFrom(msg.sender, address(this), proposalCost);
@@ -115,8 +115,8 @@ import "../interfaces/IERC20.sol";
     }
 
         function upvote(string calldata cid, uint256 amount) external payable {
-        require(msg.value >= upvoteCost, "Musix: Not enough tokens to upvote");
-        require(underlying.balanceOf(msg.sender) >= amount, "Musix: Not enough tokens to upvote");
+        // require(msg.value >= upvoteCost, "Musix: Not enough tokens to upvote");
+        require(underlying.balanceOf(msg.sender) >= upvoteCost, "Musix: Not enough tokens to upvote");
 
         Song storage song = songs[cid];
         // uint256 amount = msg.value;

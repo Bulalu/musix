@@ -49,6 +49,7 @@ def test_set_proposal(musix, rank_token):
     rank_token.transfer(stewie, token_grant, {"from": owner})
     assert rank_token.balanceOf(stewie) == token_grant
 
+   
     rank_token.approve(musix, musix.proposalCost(), {"from": stewie})
     tx = musix.propose(cid_1, {"from": stewie})
 
