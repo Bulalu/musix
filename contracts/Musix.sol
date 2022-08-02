@@ -5,7 +5,8 @@ import "../interfaces/IERC20.sol";
 
 
 
- contract WTF is Ownable {
+
+ contract Musix is Ownable {
     /* WTF does this do?
         A platform where users are incentived to find lit content before they get mass adoption.
         WHY?. i think its pretty cool when you have a chance to earn for finding a cool song from early on
@@ -14,11 +15,11 @@ import "../interfaces/IERC20.sol";
         - Promotes underground artist work
     */
 
-    uint256 public  constant DECIMALS = 10**18;
+    uint256 public  constant MUL = 10 ** 18;
 
     
-    uint256 public proposalCost = 20 * DECIMALS;
-    uint256 public upvoteCost = 10 * DECIMALS;   // 10 rank tokens
+    uint256 public proposalCost = 20 * MUL; // 20 rank tokens
+    uint256 public upvoteCost = 10 * MUL;   // 10 rank tokens
     address public tokenAddress;
     IERC20 underlying;
 
@@ -51,25 +52,23 @@ import "../interfaces/IERC20.sol";
     // its balance is 0, then it receives a token grant the first time it proposes or upvotes a song.
     // This helps us prevent users from re-upping on tokens every time they hit a 0 balance.
     mapping(address => bool) public receivedTokenGrant;
-    uint public tokenGrantSize = 100 * (10 ** DECIMALS);
+    // uint public tokenGrantSize = 100 * (10 ** DECIMALS);
 
 
     /**** ****** ******* ****** ****** 
                 EVENTS
     ****** ******* ****** ****** ****/
 
+
     event SongProposed(address indexed proposer, string cid);
     event SongUpvoted(address indexed upvoter, string cid, uint256 amount);
     event Withdrawal(address indexed withdrawer, string cid, uint tokens);
     event UpdateProposalCost(address indexed proposer, uint amount);
     event UpdateUpvoteCost(address indexed proposer, uint amount);
-
-
-
-    // constructor(IERC20 _underlying)  {
-       
-    //     underlying = _underlying;
-    // }
+    constructor(address _address) {
+        tokenAddress = _address;
+        underlying = IERC20(_address);
+    }
 
 
     /**** ****** ******* ****** ****** 
@@ -77,14 +76,13 @@ import "../interfaces/IERC20.sol";
     ****** ******* ****** ****** ****/
 
     function setProposalCost(uint256 _amount)  public onlyOwner {
-        proposalCost = _amount * (10 ** DECIMALS);
+        proposalCost = _amount * MUL;
         emit UpdateProposalCost(msg.sender, _amount);
 
     }
 
-    //don't limit how much users can upvote for now
     function setUpvoteCost(uint256 _amount)  public onlyOwner {
-        upvoteCost = _amount * (10 ** DECIMALS);
+        upvoteCost = _amount * MUL;
         emit UpdateUpvoteCost(msg.sender, _amount);
 
     }
@@ -93,15 +91,7 @@ import "../interfaces/IERC20.sol";
               PROPOSE &  UPVOTE LOGIC SER
     ****** ******* ****** ****** ****/
 
-    modifier maybeTokenGrant {
-        if (receivedTokenGrant[msg.sender] == false) {
-            receivedTokenGrant[msg.sender] = true;
-            underlying.transferFrom(owner(), msg.sender, tokenGrantSize);
-        }
-        _;
-    }
 
-  
 
     function propose(string calldata cid) payable public {
         require(songs[cid].numUpvoters == 0, "already proposed");
@@ -124,9 +114,7 @@ import "../interfaces/IERC20.sol";
 
     }
 
-
-
-    function upvote(string calldata cid, uint256 amount) external payable {
+        function upvote(string calldata cid, uint256 amount) external payable {
         require(msg.value >= upvoteCost, "Musix: Not enough tokens to upvote");
         require(underlying.balanceOf(msg.sender) >= amount, "Musix: Not enough tokens to upvote");
 
@@ -145,10 +133,9 @@ import "../interfaces/IERC20.sol";
     }
 
 
-    // function withdrawETH() external onlyOwner {
-    //     uint256 balance = address(this).balance;
-    //     address(payable(address(this)).transfer(balance, msg.sender);
-    // }
+
+
+    
 
 
 

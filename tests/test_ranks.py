@@ -12,10 +12,11 @@ def isolation(fn_isolation):
 
 
 
-def test_set_proposal_cost(musix, rank_token):
+def test_set_proposal_cost(rank_token, musix):
     owner = accounts[0]
     stewie = accounts[1]
     amount = 20
+    
 
     with brownie.reverts("Ownable: caller is not the owner"):
         musix.setProposalCost(amount, {"from": stewie})

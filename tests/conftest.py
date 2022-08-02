@@ -11,13 +11,13 @@ def rank_token(RankToken):
     return rank_token
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture()
 def musix(Musix, rank_token):
 
-    musix = Musix.deploy(rank_token, {"from": accounts[0]})
-    rank_token.approve(musix, INITIAL_SUPPLY, {"from": accounts[0]})
-    musix.setUpvoteCost(10, {"from": accounts[0]}) 
-    musix.setProposalCost(20, {"from": accounts[0]}) 
+    musix = Musix.deploy( rank_token, {"from": accounts[0]})
+    rank_token.approve(musix, INITIAL_SUPPLY * 0.5, {"from": accounts[0]})
+    # musix.setUpvoteCost(10, {"from": accounts[0]}) 
+    # musix.setProposalCost(20, {"from": accounts[0]}) 
     return musix
 
 
