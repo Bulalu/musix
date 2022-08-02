@@ -5,13 +5,18 @@ from dotmap import DotMap
 import pytest
 
 INITIAL_SUPPLY = 1_000_000 * (10 ** 18)
+# @pytest.fixture(scope="module", autouse=True)
+# def rank_token(RankToken):
+#     rank_token = RankToken.deploy(accounts[0],INITIAL_SUPPLY, {"from": accounts[0]})
+#     return rank_token
+
 @pytest.fixture(scope="module", autouse=True)
-def rank_token(RankToken):
-    rank_token = RankToken.deploy(accounts[0],INITIAL_SUPPLY, {"from": accounts[0]})
+def rank_token(MockUSDC):
+    rank_token = MockUSDC.deploy(accounts[0],INITIAL_SUPPLY, {"from": accounts[0]})
     return rank_token
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module", autouse=True)
 def musix(Musix, rank_token):
 
     musix = Musix.deploy( rank_token, {"from": accounts[0]})

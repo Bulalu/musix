@@ -1,6 +1,6 @@
 from brownie import  network, config, accounts,Musix
 from scripts.helpful_scripts import get_account, load_accounts
-from scripts.deploy_token import rank_token
+from scripts.deploy_rUSDC import rank_token
 from web3 import Web3
 
 # testing accounts
@@ -9,31 +9,31 @@ from web3 import Web3
 
 # load_accounts()
 
-# def billboard():
-#     owner = get_account()
-#     # owner = accounts[0]
-#     # stewie = accounts[1]
-#     # meg = accounts[2]
+def billboard():
+    owner = get_account()
+    # owner = accounts[0]
+    # stewie = accounts[1]
+    # meg = accounts[2]
 
-#     token_contract = rank_token()
-#     proposal_cost = Web3.toWei(0.1, 'ether')
-#     upvote_cost = Web3.toWei(0.01, 'ether')
-#     amount = 1_000_000 * 10**18
+    token_contract = rank_token()
+    proposal_cost = Web3.toWei(0.1, 'ether')
+    upvote_cost = Web3.toWei(0.01, 'ether')
+    amount = 1_000_000 * 10**18
 
-#     if len(Billboard) > 0:
-#         return Billboard[-1]
-#     else:
-#         print("Deploying Billboard Contract Buidler")
+    if len(Musix) > 0:
+        return Musix[-1]
+    else:
+        print("Deploying Musix Contract Buidler")
 
         
-#         contract = Billboard.deploy(token_contract, {"from": owner}, publish_source=config["networks"][network.show_active()]["verify"])
+        contract = Musix.deploy(token_contract, {"from": owner}, publish_source=config["networks"][network.show_active()]["verify"])
 
-#         token_contract.approve(contract, amount, {"from":owner})
-#         #init fns
-#         # tx = contract.setProposalCost(proposal_cost, {"from": owner})
-#         # # print(tx.events)
-#         # contract.setUpvoteCost(upvote_cost, {"from": owner})
-#         return contract
+        token_contract.approve(contract, amount, {"from":owner})
+        #init fns
+        # tx = contract.setProposalCost(proposal_cost, {"from": owner})
+        # # print(tx.events)
+        # contract.setUpvoteCost(upvote_cost, {"from": owner})
+        return contract
 
 # def propose_song():
 #     owner = get_account()
@@ -58,9 +58,9 @@ from web3 import Web3
 def main():
     # billboard()
     # propose_song()
-    # billboard()
+    billboard()
     
     # getter()
-    Musix.deploy(accounts[1],{"from": accounts[0]})
+    # Musix.deploy(accounts[1],{"from": accounts[0]})
    
    
