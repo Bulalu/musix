@@ -47,10 +47,13 @@ def test_set_proposal(musix, rank_token):
 
     rank_balance_before = rank_token.balanceOf(stewie)
     rank_token.transfer(stewie, token_grant, {"from": owner})
+    rank_token.transfer(meg, token_grant, {"from": owner})
+
     assert rank_token.balanceOf(stewie) == token_grant
 
    
-    rank_token.approve(musix, musix.proposalCost(), {"from": stewie})
+    rank_token.approve(musix, token_grant, {"from": stewie})
+    rank_token.approve(musix, token_grant, {"from": meg})
     tx = musix.propose(cid_1, {"from": stewie})
 
     assert "SongProposed" in tx.events
@@ -63,6 +66,17 @@ def test_set_proposal(musix, rank_token):
 
     with brownie.reverts("sorry bro, not enough tokens to propose"):
         musix.propose(cid_2, {"from": stewie})
+
+
+    # voting
+    with brownie.reverts("Musix: Not enough tokens to upvote"):
+        musix.upvote(cid_1, 9*10**18,{"from": stewie})
+
+    
+    musix.upvote(cid_1, 20*10**18,{"from": meg})
+    with brownie.reverts("Musix: you have already upvoted this song"):
+        musix.upvote(cid_1, 20*10**18,{"from": meg})
+
 
 
 

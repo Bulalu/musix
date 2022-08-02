@@ -122,7 +122,7 @@ import "../interfaces/IERC20.sol";
         // uint256 amount = msg.value;
         underlying.transferFrom(msg.sender, address(this), amount);
 
-        require(song.upvotes[msg.sender].index == 0, "you have already upvoted this song");
+        require(song.upvotes[msg.sender].index == 0, "Musix: you have already upvoted this song");
 
         song.currentUpvotes += amount;
         song.allTimeUpvotes += amount;
