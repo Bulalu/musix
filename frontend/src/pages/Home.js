@@ -62,9 +62,13 @@ const Home = () => {
   console.log("ipfs hash", ipfs_hash)
   setIPFSHASH(ipfs_hash)
 
+  // approving the contract to transfer
+  const proposal_cost = Moralis.Units.Token("20", "18")
+  await approveTokens(proposal_cost)
+  
   // submitting hash to contract
   let options = {
-    contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+    contractAddress: "0xD54525c7f709f71F66C6527366866B14b1Dd1BdC",//0xc1FEE0BDE801655892c06bC5CA57d4329205406D
     functionName: "propose",
     abi: [
       {
@@ -73,6 +77,11 @@ const Home = () => {
             "internalType": "string",
             "name": "cid",
             "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
           }
         ],
         "name": "propose",
@@ -83,11 +92,12 @@ const Home = () => {
     ],
     params: {
       cid: ipfs_hash,
-      // _proposer: account
+      _amount: proposal_cost
 
     },
 
-    msgValue: Moralis.Units.ETH("0.1")
+    // msgValue: Moralis.Units.ETH("0.1")
+    
   }
 
   await contractProcessor.fetch({
@@ -158,6 +168,57 @@ const Home = () => {
       }
 
        
+
+  }
+
+  async function approveTokens(amount) {
+    let options = {
+      contractAddress: "0xb1ecaEe17447C46D71D3881D8C6C61d21C662aE1",
+      functionName: "approve",
+      abi: [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "approve",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      params: {
+        spender: "0xD54525c7f709f71F66C6527366866B14b1Dd1BdC",
+        amount: amount,
+        
+      }
+    }
+
+    const ba = await contractProcessor.fetch({
+      params: options,  
+    });
+
+    // let balance =  (parseInt(ba._hex))/ DECIMALS
+    
+    // if ( balance && balance >= (20)) {
+    //   return true
+    // } else {
+    //   return false
+    // }
 
   }
 

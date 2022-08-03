@@ -93,12 +93,12 @@ import "../interfaces/IERC20.sol";
 
 
 
-    function propose(string calldata cid) payable public {
+    function propose(string calldata cid, uint256 _amount) payable public {
         require(songs[cid].numUpvoters == 0, "already proposed");
-        require(underlying.balanceOf(msg.sender) >= proposalCost, "sorry bro, not enough tokens to propose");
+        require(underlying.balanceOf(msg.sender) >= _amount, "sorry bro, not enough tokens to propose");
         
 
-        underlying.transferFrom(msg.sender, address(this), proposalCost);
+        underlying.transferFrom(msg.sender, address(this), _amount);
         
         Song storage song = songs[cid];
         song.submittedInBlock = block.number;
