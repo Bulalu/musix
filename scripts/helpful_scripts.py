@@ -7,8 +7,8 @@ from brownie import (
 
 
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["hardhat", "development", "ganache"]
-DECIMALS = 6
-INITIAL_SUPPLY = 1_000_000 * (10 ** 6)
+DECIMALS = 18
+INITIAL_SUPPLY = 1_000_000 * (10 ** 18)
 
 
 

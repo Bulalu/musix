@@ -1,6 +1,6 @@
-from brownie import Billboard, network, config, accounts
+from brownie import  network, config, accounts,Musix
 from scripts.helpful_scripts import get_account, load_accounts
-from scripts.deploy_token import rank_token
+from scripts.deploy_rUSDC import rank_token
 from web3 import Web3
 
 # testing accounts
@@ -16,46 +16,51 @@ def billboard():
     # meg = accounts[2]
 
     token_contract = rank_token()
-    proposal_cost = 20 #20 * 10
-    upvote_cost = 10
+    proposal_cost = Web3.toWei(0.1, 'ether')
+    upvote_cost = Web3.toWei(0.01, 'ether')
     amount = 1_000_000 * 10**18
 
-    if len(Billboard) > 0:
-        return Billboard[-1]
+    if len(Musix) > 0:
+        return Musix[-1]
     else:
-        print("Deploying Billboard Contract Buidler")
+        print("Deploying Musix Contract Buidler")
 
         
-        contract = Billboard.deploy(token_contract, {"from": owner}, publish_source=config["networks"][network.show_active()]["verify"])
+        contract = Musix.deploy(token_contract, {"from": owner}, publish_source=config["networks"][network.show_active()]["verify"])
 
         token_contract.approve(contract, amount, {"from":owner})
         #init fns
-        tx = contract.setProposalCost(proposal_cost, {"from": owner})
-        # print(tx.events)
-        contract.setUpvoteCost(upvote_cost, {"from": owner})
+        # tx = contract.setProposalCost(proposal_cost, {"from": owner})
+        # # print(tx.events)
+        # contract.setUpvoteCost(upvote_cost, {"from": owner})
         return contract
 
-def propose_song():
-    owner = get_account()
-    # stewie = accounts[1]
-    # meg = accounts[2]
-    billboard_contract = billboard()
+# def propose_song():
+#     owner = get_account()
+#     # stewie = accounts[1]
+#     # meg = accounts[2]
+#     billboard_contract = billboard()
+#     proposal_cost = Web3.toWei(0.1, 'ether')
+#     print(owner.balance() > proposal_cost)
 
-    CID = 'QmZSvz8s9pMEAMhzy1tzunU2xBP2g25de48y6buM8ssYZW'
-    # take note of the token grant
-    # this only works because owner is the admin
-    billboard_contract.propose(CID, owner, {"from": owner})
+#     CID = 'QmNe9bWiE4dN4CsLDBHRKY4V74cvoVE4J9wftjGonZD1qx'
+#     # take note of the token grant
+#     # this only works because owner is the admin
+#     billboard_contract.propose(CID, {"from": owner, "value": proposal_cost})
     
-def getter():
-    account = get_account(1)
-    billboard_contract = billboard()
+# def getter():
+#     account = get_account(1)
+#     billboard_contract = billboard()
 
-    print(account)
+#     print(account)
 
 
 def main():
     # billboard()
-    propose_song()
+    # propose_song()
+    billboard()
+    
     # getter()
+    # Musix.deploy(accounts[1],{"from": accounts[0]})
    
    

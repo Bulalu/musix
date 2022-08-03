@@ -26,6 +26,15 @@
   .votesDiv{
     display: flex;
     justify-content: space-between;
+    
+    padding-top: 5%;
+  }
+
+  .songsDiv {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 5%;
+    
   }
 
   .backHome {

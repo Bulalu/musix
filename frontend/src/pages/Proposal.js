@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./pages.css";
-import { Tag, Widget, Blockie, Tooltip, Icon, Form, Table } from "web3uikit";
+import { Tag, Widget, Blockie, Tooltip, Icon, Form, Table, Information } from "web3uikit";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
@@ -10,104 +10,93 @@ import MyYoutube from "../utils/youtube_api";
 
 const Proposal = () => {
 
-  const { state: proposalDetails } = useLocation();
+  const { state: songDetails } = useLocation();
   const { Moralis, isInitialized } = useMoralis();
   const [latestVote, setLatestVote] = useState();
   const [percUp, setPercUp] = useState(0);
   const [song, setSong] = useState()
   const [percDown, setPercDown] = useState(0);
-  const [votes, setVotes] = useState([]);
+  const [upvotes, setUpVotes] = useState([]);
+  const [score, setSongScore] = useState(0);
   const [sub, setSub] = useState(false);
   const contractProcessor = useWeb3ExecuteFunction();
 
   useEffect(() => {
     if (isInitialized) {
       
-      async function getVotes() {
-        
-        const Votes = Moralis.Object.extend("Votes");
-        const query = new Moralis.Query(Votes);
-        query.equalTo("proposal", proposalDetails.id);
+      async function getUpVotes() {
+        const Upvotes = Moralis.Object.extend("Upvotes");
+        const query = new Moralis.Query(Upvotes);
+        query.equalTo("cid", songDetails.description);
         query.descending("createdAt");
         const results = await query.find();
-        if (results.length > 0) {
-          setLatestVote(results[0].attributes);
-          setPercDown(
-            (
-              (Number(results[0].attributes.votesDown) /
-                (Number(results[0].attributes.votesDown) +
-                  Number(results[0].attributes.votesUp))) *
-              100
-            ).toFixed(0)
-          );
-          setPercUp(
-            (
-              (Number(results[0].attributes.votesUp) /
-                (Number(results[0].attributes.votesDown) +
-                  Number(results[0].attributes.votesUp))) *
-              100
-            ).toFixed(0)
-          );
-        }
+        // console.log("query query", results)
 
-
-        const votesDirection = results.map((e) => [
-          e.attributes.voter,
-          <Icon
-            fill={e.attributes.votedFor ? "#2cc40a" : "#d93d3d"}
-            size={24}
-            svg={e.attributes.votedFor ? "checkmark" : "arrowCircleDown"}
-          />,
+        const voters = results.map((e) => [
+          e.attributes.upvoter,
         ]);
 
-        setVotes(votesDirection);
+        setUpVotes(voters);
+      }
+
+      async function getSongScore() {
+        let options = {
+          contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+          functionName: "songs",
+          abi: [{"inputs":[{"internalType":"address","name":"_address","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"}],"name":"SongProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"upvoter","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"}],"name":"SongUpvoted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UpdateProposalCost","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UpdateUpvoteCost","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"withdrawer","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"},{"indexed":false,"internalType":"uint256","name":"tokens","type":"uint256"}],"name":"Withdrawal","type":"event"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proposalCost","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"cid","type":"string"}],"name":"propose","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"receivedTokenGrant","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"setProposalCost","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"setUpvoteCost","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"songs","outputs":[{"internalType":"uint256","name":"submittedTime","type":"uint256"},{"internalType":"uint256","name":"submittedInBlock","type":"uint256"},{"internalType":"uint256","name":"currentUpvotes","type":"uint256"},{"internalType":"uint256","name":"allTimeUpvotes","type":"uint256"},{"internalType":"uint256","name":"numUpvoters","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokenAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokenGrant","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tokenGrantSize","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"cid","type":"string"}],"name":"upvote","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"upvoteCost","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}],
+          
+        }
+
+        const results = await Moralis.executeFunction(options);
+        console.log("results", results)
 
       }
 
+
       async function fetchSong() {
-        const song = await getSongs(proposalDetails.id)
-        console.log("SONGI SONGI", proposalDetails.id)
+        const song = await getSongs(songDetails.id)
+        console.log("SONGI SONGI", songDetails.id)
         setSong(song)
 
       }
-      getVotes();
-      // fetchSong()
+      
+      getUpVotes()
+      // getSongScore()
 
 
     }
-  }, [Moralis.Object, Moralis.Query, isInitialized, proposalDetails.id]);
+  }, [Moralis.Object, Moralis.Query, isInitialized, songDetails.id]);
 
 
 
-  async function castVote(status) {
+  async function upvoteSong(amount) {
     // const web3 = await Moralis.enableWeb3();
+    console.log("SONG DETAILS", songDetails.description)
     let options = {
-      contractAddress: "0x8316B2Bd5876AC2816a1Aa851e18cF8D1de47C24",
-      functionName: "voteOnProposal",
+      contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+      functionName: "upvote",
       abi: [
         {
           "inputs": [
             {
-              "internalType": "uint256",
-              "name": "_id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "_vote",
-              "type": "bool"
+              "internalType": "string",
+              "name": "cid",
+              "type": "string"
             }
           ],
-          "name": "voteOnProposal",
+          "name": "upvote",
           "outputs": [],
-          "stateMutability": "nonpayable",
+          "stateMutability": "payable",
           "type": "function"
         },
       ],
       params: {
-        _id: proposalDetails.id,
-        _vote: status,
+        cid: songDetails.description,
+        // cid: status,
       },
+      
+      // msgValue: Moralis.Units.ETH(amount)
+      msgValue: amount
     };
 
     
@@ -156,19 +145,77 @@ const Proposal = () => {
               Overview
             </div>
           </Link>
-          <div>{proposalDetails.description}</div>
+          <div>{songDetails.description}</div>
           <div className="proposalOverview">
-            <Tag color={proposalDetails.color} text={proposalDetails.text} />
+            <Tag color={songDetails.color} text={songDetails.text} />
             <div className="proposer">
               <span>Proposed By </span>
-              <Tooltip content={proposalDetails.proposer}>
-                <Blockie seed={proposalDetails.proposer} />
+              <Tooltip content={songDetails.proposer}>
+                <Blockie seed={songDetails.proposer} />
               </Tooltip>
             </div>
           </div>
-        </div>
        
-        <MyYoutube id={proposalDetails.video_id} />
+        </div>
+        
+        <div className="songsDiv">
+        
+          <MyYoutube id={songDetails.video_id} />
+          {/* <Information
+               style={{ 
+                width: "40%",
+                height: "20%",
+                // margin: "auto",
+                justifyContent: "center",
+               }}
+              information={`${score} ETH`}
+              topic="Song Score"
+            /> */}
+          
+        </div>
+        <div className="votesDiv">
+          <Table
+            style={{ width: "60%" }}
+            columnsConfig="90% 10%"
+            data={upvotes}
+            header={[<span>Voters</span>]}
+            pageSize={5}
+          />
+
+          <Form
+            // isDisabled={proposalDetails.text !== "Ongoing"}
+            style={{
+              width: "35%",
+              height: "250px",
+              border: "1px solid rgba(6, 158, 252, 0.2)",
+            }}
+            buttonConfig={{
+              isLoading: sub,
+              loadingText: "Casting Vote",
+              text: "Vote",
+              theme: "secondary",
+            }}
+            data={[
+              {
+                inputWidth: "100%",
+                name: "Cast Vote",
+                // options: ["For", "Against"],
+                type: "text",
+                validation: {
+                  required: true,
+                },
+              },
+            ]}
+            onSubmit={async (e) => {
+              let amountInWei = Moralis.Units.ETH(e.data[0].inputResult);
+              // const busdInWei = Moralis.Units.Token("0.5", "18")
+              console.log("amountInWei", amountInWei)
+              await upvoteSong(amountInWei)
+              setSub(true);
+            }}
+            title="Cast Vote"
+          />
+        </div>
       </div>
       {/* <div className="voting"></div> */}
     </>
