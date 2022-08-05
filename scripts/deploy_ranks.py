@@ -58,7 +58,8 @@ def billboard():
 def main():
     # billboard()
     # propose_song()
-    billboard()
+    # billboard()
+    print(Musix[-1])
     
     # getter()
     # Musix.deploy(accounts[1],{"from": accounts[0]})

@@ -13,7 +13,7 @@ const App = () => {
     <>
       <div className="header">
         {/* <img width="200px"  src="https://media.giphy.com/media/blSTtZehjAZ8I/giphy."  />  */}
-        <h2>Rankasong</h2>
+        <h2>Musix</h2>
         
         <ConnectButton />
       </div>

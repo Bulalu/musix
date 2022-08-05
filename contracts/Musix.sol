@@ -1,7 +1,9 @@
 pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IERC20.sol";
+import {IERC4626} from "../interfaces/IERC4626.sol";
+import {IERC20} from "../interfaces/IERC20.sol";
+
 
 
 
@@ -21,7 +23,9 @@ import "../interfaces/IERC20.sol";
     uint256 public proposalCost = 20 * MUL; // 20 rank tokens
     uint256 public upvoteCost = 10 * MUL;   // 10 rank tokens
     address public tokenAddress;
+    address public vault;
     IERC20 underlying;
+    
 
     struct Song {
         // Tracks the time when the song was initially submitted
@@ -65,6 +69,7 @@ import "../interfaces/IERC20.sol";
     event Withdrawal(address indexed withdrawer, string cid, uint tokens);
     event UpdateProposalCost(address indexed proposer, uint amount);
     event UpdateUpvoteCost(address indexed proposer, uint amount);
+    event UpdateVault(address  vault);
     constructor(address _address) {
         tokenAddress = _address;
         underlying = IERC20(_address);
@@ -135,7 +140,20 @@ import "../interfaces/IERC20.sol";
 
 
 
+        function setVault(address _vault) public onlyOwner {
+        vault = _vault;
+        emit UpdateVault(vault);
+    }
+
     
+    // deposits into the vault
+    function deposit(uint256 amount) public onlyOwner {
+        require(vault != address(0), "vault not set");
+        require(underlying.balanceOf(address(this)) >= amount, "Not enough tokens");
+
+        underlying.approve(vault, amount);
+        IERC4626(vault).deposit(amount, address(this));
+    }
 
 
 

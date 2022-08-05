@@ -57,6 +57,7 @@ const Home = () => {
           }
       }
   )
+  
 
   const ipfs_hash = response_.data.IpfsHash
   console.log("ipfs hash", ipfs_hash)
@@ -327,6 +328,7 @@ const Home = () => {
             onSubmit={ async (e) => {
               setSub(true);
               await(allInOne(e.data[0].inputResult))
+              
               // await canProposeCID(account) ? 
                   
               //     await(allInOne(e.data[0].inputResult)) : alert("Not Enough Rank Tokens")
