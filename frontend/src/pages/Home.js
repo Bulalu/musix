@@ -1,8 +1,9 @@
 import React, { useEffect, useState, styled } from "react";
 import "./pages.css";
-import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero} from "web3uikit";
+import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero, Button} from "web3uikit";
 import { Link } from "react-router-dom";
 import { useMoralis, useMoralisWeb3Api, useWeb3ExecuteFunction} from "react-moralis";
+import { musix_address, token_address } from "./address.js";
 import axios from "axios";
 import {} from 'dotenv/config'
 import { Alert } from '@mui/material';
@@ -22,7 +23,32 @@ const Home = () => {
   const DECIMALS = 1000000
   const { authenticate, isAuthenticated, isAuthenticating, user, account, logout } = useMoralis();
    
+  async function mintUSDC() {
+    let options = {
+      contractAddress: token_address,
+      functionName: "mint",
+      abi: [
+        {
+          "inputs": [],
+          "name": "mint",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      // params: {
+      //   spender: musix_address,
+      //   amount: amount,
+        
+      // }
+    }
 
+    const ba = await contractProcessor.fetch({
+      params: options,  
+    });
+
+  }
+ 
   async function allInOne(yt_link) {
 
     if (isAuthenticated) {
@@ -57,14 +83,19 @@ const Home = () => {
           }
       }
   )
+  
 
   const ipfs_hash = response_.data.IpfsHash
   console.log("ipfs hash", ipfs_hash)
   setIPFSHASH(ipfs_hash)
 
+  // approving the contract to transfer
+  const proposal_cost = Moralis.Units.Token("20", "18")
+  await approveTokens(proposal_cost)
+  
   // submitting hash to contract
   let options = {
-    contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+    contractAddress: musix_address,//0xc1FEE0BDE801655892c06bC5CA57d4329205406D
     functionName: "propose",
     abi: [
       {
@@ -73,6 +104,11 @@ const Home = () => {
             "internalType": "string",
             "name": "cid",
             "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
           }
         ],
         "name": "propose",
@@ -83,11 +119,12 @@ const Home = () => {
     ],
     params: {
       cid: ipfs_hash,
-      // _proposer: account
+      _amount: proposal_cost
 
     },
 
-    msgValue: Moralis.Units.ETH("0.1")
+    // msgValue: Moralis.Units.ETH("0.1")
+    
   }
 
   await contractProcessor.fetch({
@@ -116,7 +153,7 @@ const Home = () => {
   async function canProposeCID(account) {
     
       let options = {
-        contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+        contractAddress: token_address,
         functionName: "balanceOf",
         abi: [
           {
@@ -158,6 +195,59 @@ const Home = () => {
       }
 
        
+
+  }
+
+
+
+  async function approveTokens(amount) {
+    let options = {
+      contractAddress: token_address,
+      functionName: "approve",
+      abi: [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "approve",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      params: {
+        spender: musix_address,
+        amount: amount,
+        
+      }
+    }
+
+    const ba = await contractProcessor.fetch({
+      params: options,  
+    });
+
+    // let balance =  (parseInt(ba._hex))/ DECIMALS
+    
+    // if ( balance && balance >= (20)) {
+    //   return true
+    // } else {
+    //   return false
+    // }
 
   }
 
@@ -266,6 +356,8 @@ const Home = () => {
             onSubmit={ async (e) => {
               setSub(true);
               await(allInOne(e.data[0].inputResult))
+              // console.log("musicxxx", musix_address)
+              
               // await canProposeCID(account) ? 
                   
               //     await(allInOne(e.data[0].inputResult)) : alert("Not Enough Rank Tokens")
@@ -306,71 +398,16 @@ const Home = () => {
  
           </Tab>
 
-          <Tab tabKey={2} tabName="BOARD">
-            {/* {proposals && (
-            <div className="tabContent">
-              Governance Overview
-              <div className="widgets">
-                <Widget
-                  info={totalP}
-                  title="Proposals Created"
-                  style={{ width: "200%" }}
-                >
-                  <div className="extraWidgetInfo">
-                    <div className="extraTitle">Pass Rate</div>
-                    <div className="progress">
-                      <div
-                        className="progressPercentage"
-                        style={{ width: `${passRate}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </Widget>
-                <Widget info={voters.length} title="Eligible Voters" />
-                <Widget info={totalP-counted} title="Ongoing Proposals" />
+          <Tab tabKey={2} tabName="rUSDC">
+
+              <div className="tabContent">
+                <h3>get 100 rUSDC for free, wohoo!</h3>
+
+                <Button text="mint" onClick={mintUSDC}/>
               </div>
-              Recent Proposals
-              <div style={{ marginTop: "30px" }}>
-                <Table
-                  columnsConfig="10% 70% 20%"
-                  data={proposals}
-                  header={[
-                    <span>ID</span>,
-                    <span>Description</span>,
-                    <span>Status</span>,
-                  ]}
-                  pageSize={5}
-                />
-              </div>
+              
 
-              <Form
-                  buttonConfig={{
-                    isLoading: sub,
-                    loadingText: "Submitting Proposal",
-                    text: "Submit",
-                    theme: "secondary",
-                  }}
-                  data={[
-                    {
-                      inputWidth: "100%",
-                      name: "New Proposal",
-                      type: "textarea",
-                      validation: {
-                        required: true,
-                      },
-                      value: "",
-                    },
-                  ]}
-                  onSubmit={(e) => {
-                    setSub(true);
-                    createProposal(e.data[0].inputResult);
-                  }}
-                  title="Create a New Proposal"
-                />
-
-
-            </div>
-            )} */}
+              
           </Tab>
           
         </TabList>

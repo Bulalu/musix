@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./pages.css";
 import { Tag, Widget, Blockie, Tooltip, Icon, Form, Table, Information } from "web3uikit";
+import { musix_address, token_address } from "./address.js";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
@@ -41,8 +42,8 @@ const Proposal = () => {
 
       async function getSongScore() {
         let options = {
-          contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
-          functionName: "songs",
+          contractAddress: musix_address,
+          functionName: "getSongScore",
           abi: [{"inputs":[{"internalType":"address","name":"_address","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"}],"name":"SongProposed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"upvoter","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"}],"name":"SongUpvoted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UpdateProposalCost","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"proposer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UpdateUpvoteCost","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"withdrawer","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"},{"indexed":false,"internalType":"uint256","name":"tokens","type":"uint256"}],"name":"Withdrawal","type":"event"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proposalCost","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"cid","type":"string"}],"name":"propose","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"receivedTokenGrant","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"setProposalCost","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"setUpvoteCost","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"songs","outputs":[{"internalType":"uint256","name":"submittedTime","type":"uint256"},{"internalType":"uint256","name":"submittedInBlock","type":"uint256"},{"internalType":"uint256","name":"currentUpvotes","type":"uint256"},{"internalType":"uint256","name":"allTimeUpvotes","type":"uint256"},{"internalType":"uint256","name":"numUpvoters","type":"uint256"},{"internalType":"address","name":"proposer","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokenAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokenGrant","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"tokenGrantSize","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"cid","type":"string"}],"name":"upvote","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"upvoteCost","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}],
           
         }
@@ -67,13 +68,63 @@ const Proposal = () => {
     }
   }, [Moralis.Object, Moralis.Query, isInitialized, songDetails.id]);
 
+  async function approveTokens(amount) {
+    let options = {
+      contractAddress: token_address,
+      functionName: "approve",
+      abi: [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "approve",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      params: {
+        spender: musix_address,
+        amount: amount,
+        
+      }
+    }
 
+    const ba = await contractProcessor.fetch({
+      params: options,  
+    });
+
+    // let balance =  (parseInt(ba._hex))/ DECIMALS
+    
+    // if ( balance && balance >= (20)) {
+    //   return true
+    // } else {
+    //   return false
+    // }
+
+  }
 
   async function upvoteSong(amount) {
     // const web3 = await Moralis.enableWeb3();
+    await approveTokens(amount)
     console.log("SONG DETAILS", songDetails.description)
     let options = {
-      contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+      contractAddress: musix_address,
       functionName: "upvote",
       abi: [
         {
@@ -82,6 +133,11 @@ const Proposal = () => {
               "internalType": "string",
               "name": "cid",
               "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
             }
           ],
           "name": "upvote",
@@ -92,11 +148,11 @@ const Proposal = () => {
       ],
       params: {
         cid: songDetails.description,
-        // cid: status,
+        amount: amount,
       },
       
       // msgValue: Moralis.Units.ETH(amount)
-      msgValue: amount
+      // msgValue: amount
     };
 
     

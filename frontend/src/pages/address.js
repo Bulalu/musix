@@ -1,0 +1,3 @@
+
+export const musix_address="0x42192762D5dA55B68e8eEAEfba4Caf6bAEfc31FD"
+export const token_address= "0x9768d0AfEeE9860cD95f5F638115F9feBFf7A72a"
