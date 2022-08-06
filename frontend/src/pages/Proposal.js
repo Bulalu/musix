@@ -250,7 +250,7 @@ const Proposal = () => {
        
         </div>
 
-        <Information
+        {/* <Information
                style={{ 
                 width: "40%",
                 height: "20%",
@@ -259,7 +259,7 @@ const Proposal = () => {
                }}
               information={`${score} USD`}
               topic="Song Score"
-            />
+            /> */}
         
         <div className="songsDiv">
         
