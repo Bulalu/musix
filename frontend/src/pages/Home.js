@@ -1,8 +1,9 @@
 import React, { useEffect, useState, styled } from "react";
 import "./pages.css";
-import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero} from "web3uikit";
+import { TabList, Tab, Widget, Tag, Table, Form, LinkTo, Input, Hero, Button} from "web3uikit";
 import { Link } from "react-router-dom";
 import { useMoralis, useMoralisWeb3Api, useWeb3ExecuteFunction} from "react-moralis";
+import { musix_address, token_address } from "./address.js";
 import axios from "axios";
 import {} from 'dotenv/config'
 import { Alert } from '@mui/material';
@@ -22,7 +23,32 @@ const Home = () => {
   const DECIMALS = 1000000
   const { authenticate, isAuthenticated, isAuthenticating, user, account, logout } = useMoralis();
    
+  async function mintUSDC() {
+    let options = {
+      contractAddress: token_address,
+      functionName: "mint",
+      abi: [
+        {
+          "inputs": [],
+          "name": "mint",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      // params: {
+      //   spender: musix_address,
+      //   amount: amount,
+        
+      // }
+    }
 
+    const ba = await contractProcessor.fetch({
+      params: options,  
+    });
+
+  }
+ 
   async function allInOne(yt_link) {
 
     if (isAuthenticated) {
@@ -69,7 +95,7 @@ const Home = () => {
   
   // submitting hash to contract
   let options = {
-    contractAddress: "0xD54525c7f709f71F66C6527366866B14b1Dd1BdC",//0xc1FEE0BDE801655892c06bC5CA57d4329205406D
+    contractAddress: musix_address,//0xc1FEE0BDE801655892c06bC5CA57d4329205406D
     functionName: "propose",
     abi: [
       {
@@ -127,7 +153,7 @@ const Home = () => {
   async function canProposeCID(account) {
     
       let options = {
-        contractAddress: "0xc1FEE0BDE801655892c06bC5CA57d4329205406D",
+        contractAddress: token_address,
         functionName: "balanceOf",
         abi: [
           {
@@ -172,9 +198,11 @@ const Home = () => {
 
   }
 
+
+
   async function approveTokens(amount) {
     let options = {
-      contractAddress: "0xb1ecaEe17447C46D71D3881D8C6C61d21C662aE1",
+      contractAddress: token_address,
       functionName: "approve",
       abi: [
         {
@@ -203,7 +231,7 @@ const Home = () => {
         }
       ],
       params: {
-        spender: "0xD54525c7f709f71F66C6527366866B14b1Dd1BdC",
+        spender: musix_address,
         amount: amount,
         
       }
@@ -328,6 +356,7 @@ const Home = () => {
             onSubmit={ async (e) => {
               setSub(true);
               await(allInOne(e.data[0].inputResult))
+              // console.log("musicxxx", musix_address)
               
               // await canProposeCID(account) ? 
                   
@@ -369,71 +398,16 @@ const Home = () => {
  
           </Tab>
 
-          <Tab tabKey={2} tabName="BOARD">
-            {/* {proposals && (
-            <div className="tabContent">
-              Governance Overview
-              <div className="widgets">
-                <Widget
-                  info={totalP}
-                  title="Proposals Created"
-                  style={{ width: "200%" }}
-                >
-                  <div className="extraWidgetInfo">
-                    <div className="extraTitle">Pass Rate</div>
-                    <div className="progress">
-                      <div
-                        className="progressPercentage"
-                        style={{ width: `${passRate}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </Widget>
-                <Widget info={voters.length} title="Eligible Voters" />
-                <Widget info={totalP-counted} title="Ongoing Proposals" />
+          <Tab tabKey={2} tabName="rUSDC">
+
+              <div className="tabContent">
+                <h3>get 100 rUSDC for free, wohoo!</h3>
+
+                <Button text="mint" onClick={mintUSDC}/>
               </div>
-              Recent Proposals
-              <div style={{ marginTop: "30px" }}>
-                <Table
-                  columnsConfig="10% 70% 20%"
-                  data={proposals}
-                  header={[
-                    <span>ID</span>,
-                    <span>Description</span>,
-                    <span>Status</span>,
-                  ]}
-                  pageSize={5}
-                />
-              </div>
+              
 
-              <Form
-                  buttonConfig={{
-                    isLoading: sub,
-                    loadingText: "Submitting Proposal",
-                    text: "Submit",
-                    theme: "secondary",
-                  }}
-                  data={[
-                    {
-                      inputWidth: "100%",
-                      name: "New Proposal",
-                      type: "textarea",
-                      validation: {
-                        required: true,
-                      },
-                      value: "",
-                    },
-                  ]}
-                  onSubmit={(e) => {
-                    setSub(true);
-                    createProposal(e.data[0].inputResult);
-                  }}
-                  title="Create a New Proposal"
-                />
-
-
-            </div>
-            )} */}
+              
           </Tab>
           
         </TabList>

@@ -26,9 +26,9 @@ def billboard():
         print("Deploying Musix Contract Buidler")
 
         
-        contract = Musix.deploy(token_contract, {"from": owner}, publish_source=config["networks"][network.show_active()]["verify"])
+        contract = Musix.deploy(token_contract, {"from": owner}, publish_source=True)
 
-        token_contract.approve(contract, amount, {"from":owner})
+        # token_contract.approve(contract, amount, {"from":owner})
         #init fns
         # tx = contract.setProposalCost(proposal_cost, {"from": owner})
         # # print(tx.events)
@@ -58,8 +58,8 @@ def billboard():
 def main():
     # billboard()
     # propose_song()
-    # billboard()
-    print(Musix[-1])
+    billboard()
+    # print(Musix[-1])
     
     # getter()
     # Musix.deploy(accounts[1],{"from": accounts[0]})

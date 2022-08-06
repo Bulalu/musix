@@ -134,7 +134,7 @@ import {IERC20} from "../interfaces/IERC20.sol";
         song.numUpvoters++;
         song.upvotes[msg.sender].index = song.numUpvoters;
 
-        emit SongUpvoted(msg.sender, cid, msg.value);
+        emit SongUpvoted(msg.sender, cid, amount);
     }
 
 
@@ -153,6 +153,12 @@ import {IERC20} from "../interfaces/IERC20.sol";
 
         underlying.approve(vault, amount);
         IERC4626(vault).deposit(amount, address(this));
+    }
+
+    function getSongScore(string calldata cid) public view returns (uint256) {
+        Song storage song = songs[cid];
+        uint256 score = song.allTimeUpvotes;
+        return score;
     }
 
 
