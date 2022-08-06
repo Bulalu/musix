@@ -90,12 +90,12 @@ const Proposal = () => {
       // }
 
 
-      // async function fetchSong() {
-      //   const song = await getSongs(songDetails.id)
-      //   console.log("SONGI SONGI", songDetails.id)
-      //   setSong(song)
+      async function fetchSong() {
+        const song = await getSongs(songDetails.id)
+        console.log("SONGI SONGI", songDetails.id)
+        setSong(song)
 
-      // }
+      }
       
       getUpVotes()
       // getSongScore()
