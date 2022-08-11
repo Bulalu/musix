@@ -257,7 +257,7 @@ const Proposal = () => {
                 // margin: "auto",
                 justifyContent: "center",
                }}
-              information={`${score/10 **20} USD`}
+              information={`${score} USD`}
               topic="Song Score"
             />
         
