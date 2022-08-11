@@ -250,16 +250,16 @@ const Proposal = () => {
        
         </div>
 
-        {/* <Information
+        <Information
                style={{ 
                 width: "40%",
                 height: "20%",
                 // margin: "auto",
                 justifyContent: "center",
                }}
-              information={`${score} USD`}
+              information={`${score/10 **20} USD`}
               topic="Song Score"
-            /> */}
+            />
         
         <div className="songsDiv">
         
