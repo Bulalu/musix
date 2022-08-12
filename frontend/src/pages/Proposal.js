@@ -237,7 +237,7 @@ const Proposal = () => {
               Overview
             </div>
           </Link>
-          <div>{songDetails.description}</div>
+          {/* <div>{songDetails.description}</div> */}
           <div className="proposalOverview">
             <Tag color={songDetails.color} text={songDetails.text} />
             <div className="proposer">
