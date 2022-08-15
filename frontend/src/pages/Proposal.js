@@ -42,11 +42,12 @@ const Proposal = () => {
           e.attributes.amount,
           
         ])
-        const summation = songi.reduce((a, b) => a + b, 0)
+        const summation = songi.reduce((a, b) => parseInt(a) + parseInt(b), 0)
         
         const inUSD = Moralis.Units.FromWei(summation.toString(), 18)
         setSongScore(inUSD )
-        // console.log("amount amount", inUSD)
+        console.log("summation", summation)
+        
 
         setUpVotes(voters);
       }
