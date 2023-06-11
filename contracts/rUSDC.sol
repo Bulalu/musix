@@ -22,6 +22,7 @@ contract MockUSDC is ERC20{
     function mint() public  {
         // require(hasRole(MINTER_ROLE, _msgSender()), "ERC20PresetMinterPauser: must have minter role to mint");
         // require(testers[msg.sender] == false && amount <= maxAmount, "ERC20PresetMinterPauser: cannot mint more than max amount");
+        require(! testers[msg.sender], "You can Only mint once");
         testers[msg.sender] = true;
         _mint(msg.sender, maxAmount);
     }

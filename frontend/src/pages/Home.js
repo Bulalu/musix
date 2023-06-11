@@ -409,6 +409,36 @@ const Home = () => {
 
               
           </Tab>
+
+          <Tab tabKey={3} tabName="ABOUT">
+
+            <div className="tabContent">
+              <h3>WTF is Musix?</h3>
+
+              <h6>
+              With Musix, you can be the one to spot high quality songs earlier than anyone else! With our special incentive system, you can earn rewards for being the first to listen to and identify great new music.
+
+              So put your musical taste to the test, and become a legend in the music world with Musix!
+              </h6>
+
+              <h5> checkout the demo links </h5>
+              <li>
+                <a href="https://twitter.com/elisha_bulalu/status/1543967465583042560?s=20&t=Yzy51pHr0bLkJebKlRV3ig"  >demo 1</a>
+              </li>
+              <li>
+                <a href="https://twitter.com/elisha_bulalu/status/1546836989445537793?s=20&t=Yzy51pHr0bLkJebKlRV3ig">demo 2</a>
+              </li>
+              <li>
+                <a href="https://twitter.com/elisha_bulalu/status/1549148871288393733?s=20&t=Yzy51pHr0bLkJebKlRV3ig">demo 3</a>
+              </li>
+              <li>
+                <a href="https://twitter.com/elisha_bulalu/status/1553388282385424385?s=20&t=Yzy51pHr0bLkJebKlRV3ig">demo 4</a>
+              </li>
+            </div>
+
+
+
+            </Tab>
           
         </TabList>
       </div>
